@@ -1,0 +1,8 @@
+Debug/
+x64/
+build/
+dbn.sdf
+dbn.sln
+dbn.v12.suo
+*.vcxproj
+*.vcxproj.filters
