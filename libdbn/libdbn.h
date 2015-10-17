@@ -12,3 +12,5 @@
 //DLLEXPORT char * yell();
 
 #include "Python.h"
+
+static PyObject * libdbnError;

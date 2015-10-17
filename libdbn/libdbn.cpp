@@ -33,8 +33,6 @@ static PyMethodDef libdbnMethods[] = {
 	{NULL, NULL}
 };
 
-static PyObject * libdbnError;
-
 // module init function for regist the function list into module
 // the name of module , function and some other thing  must be same
 PyMODINIT_FUNC

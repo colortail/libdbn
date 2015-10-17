@@ -1,0 +1,53 @@
+/**
+a bayesian network(static) data specification should
+be a JSON 
+attribute "data" must have name,pa,cpt -- three attributes
+|cpt| = k^|pa|, the value is a permutation from all 0(false) to all 1(true)
+*/
+{
+	"type": "bn",
+	"variable_size": 8,
+	"name": "asian_net",
+	"data": [
+		{
+			"name": "A",
+			"pa": null,
+			"cpt" : [0.2]
+		},
+		{
+			"name": "T",
+			"pa": ["A"],
+			"cpt" : [0.4,0.6]
+		},
+		{
+			"name": "R",
+			"pa": ["T","L"],
+			"cpt" : [0.2,0.1,0.5,0.2]
+		},
+		{
+			"name": "L",
+			"pa": ["S"],
+			"cpt" : [0.4,0.6]
+		},
+		{
+			"name": "S",
+			"pa": null,
+			"cpt" : [0.2]
+		},
+		{
+			"name": "B",
+			"pa": ["S"],
+			"cpt" : [0.7,0.3]
+		},
+		{
+			"name": "D",
+			"pa": ["R","B"],
+			"cpt" : [0.2,0.4,0.2,0.2]
+		},
+		{
+			"name": "X",
+			"pa": ["R"],
+			"cpt" : [0.8,0.2]
+		}
+	]
+}
