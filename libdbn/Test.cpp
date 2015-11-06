@@ -2,6 +2,13 @@
 //#pragma comment(lib,"pthreadVCE2.lib")
 //#pragma comment(lib,"libdbn.lib")
 #include "GraphMatrix.h"
+#include "Factor.h"
+#include "InOutUtils.h"
+
+#include <iostream>
+#include <vector>
+#include <set>
+#include <string>
 //#include <stdint.h>
 //#include <pthread.h>
 //#include <math.h>
@@ -12,6 +19,37 @@ extern void graphmatrixTest();
 int main() {
 	//graphmatrixTest();
 	
+	vector<std::string> vv;
+	vv.push_back("A");
+	vv.push_back("B");
+	vv.push_back("C");
+	vv.push_back("D");
+
+	vector<std::string> v1;
+	v1.push_back("B");
+	v1.push_back("D");
+
+	Factor fact1(vv);
+	//Factor fact2(v1);
+
+	vector<double> vp1;
+	vp1.push_back(0.1);
+	vp1.push_back(0.2);
+	vp1.push_back(0.3);
+	vp1.push_back(0.4);
+
+	fact1.setProb(vp1);
+	vector<string> pa;
+	pa.push_back("A");
+	pa.push_back("D");
+	fact1.setParents(pa);
+
+	//fact2.setProb(vector<double>(4, 0.5));
+	unordered_map<string, double> evidset;
+	evidset.insert({ "A", 0 });
+	InOutUtils::stdPrint(fact1);
+	InOutUtils::stdPrint(fact1.marginalize(pa));
+	//InOutUtils::stdPrint(fact1.setEvidence(evidset));
 	return 0;
 }
 
