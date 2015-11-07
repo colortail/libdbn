@@ -171,7 +171,7 @@ unordered_map<string, pair<int, int>> Factor::getUnion(Factor* a, Factor* b) {
 }
 
 //³Ë
-Factor Factor::multiplyFactor(Factor & b) {
+Factor Factor::multiply(Factor & b) {
 
 	if (this->varSize == 0 && b.varSize == 0)
 		return Factor(vector<string>());
@@ -357,4 +357,18 @@ Factor Factor::setEvidence(unordered_map<string, double>& evidset) {
 
 	}
 	return result;
+}
+
+//set operator
+bool operator<(const Factor lhs, const Factor rhs) {
+
+	vector<string>* leftNames = lhs.getElementsName();
+	vector<string>* rightNames = rhs.getElementsName();
+	if (lhs.getVarSize() != rhs.getVarSize())
+		return lhs.getVarSize() < rhs.getVarSize();
+	uint32_t i = 0;
+	while (i < lhs.getVarSize() && (*leftNames)[i] == (*rightNames)[i])
+		i++;
+	return (i < lhs.getVarSize() && (*leftNames)[i] < (*rightNames)[i]);
+
 }

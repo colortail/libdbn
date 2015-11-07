@@ -44,19 +44,30 @@ public:
 	virtual bool exists(int, int) = 0;
 
 	//顶点操作
+	//顶点数据
 	virtual Tv& vertex(int) = 0;
+	//入度
 	virtual int inDegree(int) = 0;
+	//出度
 	virtual int outDegree(int) = 0;
+	//顶点访问状态
 	virtual VStatus& status(int) = 0;
+	//时间标签dTime fTime
 	virtual int& dTime(int) = 0;
 	virtual int& fTime(int) = 0;
+	//遍历树中的父节点
 	virtual int& parent(int) = 0;
+	//优先级数
 	virtual int& priority(int) = 0;
+	
+	//边操作
+	//边数据
 	virtual Te& edge(int, int) = 0;
+	//边类型
 	virtual EType& type(int, int) = 0;
+	//边权重
 	virtual int& weight(int, int) = 0;
 
-	
 	void bfs(int);	//多连通域广度优先
 
 	void dfs(int);	//多连通域深度优先

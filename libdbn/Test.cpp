@@ -3,6 +3,7 @@
 //#pragma comment(lib,"libdbn.lib")
 #include "GraphMatrix.h"
 #include "Factor.h"
+#include "BNet.h"
 #include "InOutUtils.h"
 
 #include <iostream>
@@ -14,11 +15,27 @@
 //#include <math.h>
 //#include "libdbn.h"
 
-extern void graphmatrixTest();
+//ÁÚ½Ó¾ØÕó²âÊÔº¯Êı
+void graphmatrixTest() {
 
-int main() {
-	//graphmatrixTest();
-	
+	GraphMatrix<int, int> g;
+	g.insert(1);
+	g.insert(2);
+	g.insert(3);
+	g.insert(1, 1, 0, 1);
+	g.insert(2, 2, 1, 2);
+	g.insert(3, 3, 2, 0);
+
+	g.bfs(0);
+	g.dfs(0);
+	//g.Graph<int, int>::bfs(0);
+	//g.Graph<int, int>::dfs(0);
+
+}
+
+//CPT²âÊÔ
+void factorTest() {
+
 	vector<std::string> vv;
 	vv.push_back("A");
 	vv.push_back("B");
@@ -30,7 +47,14 @@ int main() {
 	v1.push_back("D");
 
 	Factor fact1(vv);
-	//Factor fact2(v1);
+	Factor fact2(v1);
+
+	//set<Factor> sfs;
+	//sfs.insert(fact1);
+	//sfs.insert(fact2);
+	//printf("fact1 < fact1 ? %d\n",fact1 < fact1);
+	//printf("fact1 < fact2 ? %d\n", fact1 < fact2);
+	//printf("fact2 < fact1 ? %d\n", fact2 < fact1);
 
 	vector<double> vp1;
 	vp1.push_back(0.1);
@@ -48,8 +72,39 @@ int main() {
 	unordered_map<string, double> evidset;
 	evidset.insert({ "A", 0 });
 	InOutUtils::stdPrint(fact1);
-	InOutUtils::stdPrint(fact1.marginalize(pa));
+	InOutUtils::stdPrint(fact1.summation(pa));
 	//InOutUtils::stdPrint(fact1.setEvidence(evidset));
+}
+
+void bnetTest() {
+	BNet bn;
+	bn.insert(RandVar(0, std::string("A")));
+	bn.insert(RandVar(1, std::string("S")));
+	bn.insert(RandVar(2, std::string("T")));
+	bn.insert(RandVar(3, std::string("R")));
+	bn.insert(RandVar(4, std::string("L")));
+	bn.insert(RandVar(5, std::string("X")));
+	bn.insert(RandVar(6, std::string("D")));
+	bn.insert(RandVar(7, std::string("B")));
+
+	bn.insert(0, 0, 0, 2);
+	bn.insert(0, 0, 2, 3);
+	bn.insert(0, 0, 3, 5);
+	bn.insert(0, 0, 3, 6);
+	bn.insert(0, 0, 1, 4);
+	bn.insert(0, 0, 1, 7);
+	bn.insert(0, 0, 4, 3);
+	bn.insert(0, 0, 7, 6);
+
+	bn.moralize();
+
+	InOutUtils::stdPrintDBnet(bn);
+}
+
+int main() {
+	//graphmatrixTest();
+	factorTest();
+	//bnetTest();
 	return 0;
 }
 

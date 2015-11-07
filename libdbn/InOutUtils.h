@@ -1,8 +1,13 @@
 #pragma once
 #include "Factor.h"
+#include "BNet.h"
 
 class InOutUtils {
 public:
 	//static void scanTableFactor(TableFactor&);
-	static void stdPrint(Factor& factor);
+	//CPT ¸ÅÂÊ
+	static void stdPrint(Factor & factor);
+
+	//ÏÔÊ¾ÍøÂçÍØÆË
+	static void stdPrintDBnet(BNet & bnet);
 };

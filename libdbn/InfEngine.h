@@ -1,5 +1,8 @@
 #pragma once
 #include <string>
+#include "BNet.h"
+#include "JTree.h"
+#include "Metric.h"
 
 #ifndef _FACTOR_
 #define _FACTOR_
@@ -42,6 +45,12 @@ public:
 	}
 
 	//query £∫ Õ∆¿Ì
-	
+	vector<int> greedyOrdering(const BNet& bnet, Metric & foo);
+	vector<int> maxCardinalitySearch(const BNet& bnet);
 
+	Factor variableElim(BNet& bnet, vector<string> queryset, unordered_map<string, double> evidset, vector<int> pi);
+	set<Factor>& eliminate(set<Factor>& factorset, vector<string> elimvars);
+
+	JTree buildJTree(BNet & bnet);
+	JTree buildJTree(BNet & bnet, vector<int>);
 };

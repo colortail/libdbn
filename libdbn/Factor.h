@@ -27,16 +27,24 @@ public:
 
 	FactorType getFactorType() const { return this->factorType; }
 
-	const vector<string>* getElementsName() {
+	vector<string>* getElementsName() const {
 		return pName;
 	}
 
-	const vector<vector<double>>* getElementsTable() {
+	vector<vector<double>>* getElementsTable() const {
 		return pTable;
 	}
 
-	const vector<bool>* getParentsMark() {
+	vector<bool>* getParentsMark() const {
 		return this->pParents;
+	}
+
+	uint32_t getVarSize() const {
+		return varSize;
+	}
+
+	uint32_t getRowsSize() const {
+		return rows;
 	}
 
 	void setFactorType(FactorType type) {
@@ -48,11 +56,13 @@ public:
 
 	//基本操作
 	//乘
-	Factor multiplyFactor(Factor & a);
+	Factor multiply(Factor & a);
 	//边缘化(参数为被加和变量，将被消去)
 	Factor summation(vector<string> & varset);
 	//设置证据
 	Factor setEvidence(unordered_map<string, double>&);
+
+	friend bool operator<(const Factor lhs, const Factor rhs);
 
 	friend class InfEngine;
 
@@ -85,4 +95,5 @@ private:
 	vector<size_t> getElemSize(vector<string> & names);
 	//get the same variable in two different set
 	static unordered_map<string, pair<int, int> > getUnion(Factor* a, Factor* b);
+
 };

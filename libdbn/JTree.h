@@ -1,5 +1,8 @@
 #pragma once
-class JTree
+#include "GraphMatrix.h"
+#include "Factor.h"
+
+class JTree : public GraphMatrix<vector<Factor>, Factor>
 {
 private:
 	
