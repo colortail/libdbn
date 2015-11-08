@@ -4,6 +4,8 @@
 #include "GraphMatrix.h"
 #include "Factor.h"
 #include "BNet.h"
+#include "Metric.h"
+#include "InfEngine.h"
 #include "InOutUtils.h"
 
 #include <iostream>
@@ -39,8 +41,8 @@ void factorTest() {
 	vector<std::string> vv;
 	vv.push_back("A");
 	vv.push_back("B");
-	vv.push_back("C");
-	vv.push_back("D");
+	//vv.push_back("C");
+	//vv.push_back("D");
 
 	vector<std::string> v1;
 	v1.push_back("B");
@@ -53,7 +55,7 @@ void factorTest() {
 	//sfs.insert(fact1);
 	//sfs.insert(fact2);
 	//printf("fact1 < fact1 ? %d\n",fact1 < fact1);
-	//printf("fact1 < fact2 ? %d\n", fact1 < fact2);
+	printf("fact1 < fact2 ? %d\n", fact1 < fact2);
 	//printf("fact2 < fact1 ? %d\n", fact2 < fact1);
 
 	vector<double> vp1;
@@ -98,13 +100,21 @@ void bnetTest() {
 
 	bn.moralize();
 
-	InOutUtils::stdPrintDBnet(bn);
+	//InOutUtils::stdPrintDBnet(bn);
+
+	//jtree test
+	InfEngine* pInf = InfEngine::getInstance();
+	//max cardinality
+	//vector<int> pi = pInf->maxCardinalitySearch(bn);
+	vector<int> pi = pInf->greedyOrdering(bn, MinFill());
+	for (uint32_t i = 0; i < pi.size(); i++)
+		std::cout << bn.vertex(pi[i]).name << std::endl;
 }
 
 int main() {
 	//graphmatrixTest();
-	factorTest();
-	//bnetTest();
+	//factorTest();
+	bnetTest();
 	return 0;
 }
 

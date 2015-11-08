@@ -5,8 +5,10 @@
 #include <string>
 #include <cassert>
 #include <cstdint>
+#include "utils.h"
 
 using namespace std;
+using namespace libdbn;
 
 //CPD条件概率分布，POT势函数
 enum FactorType { CPD, POT };

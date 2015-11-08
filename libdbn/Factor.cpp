@@ -362,13 +362,15 @@ Factor Factor::setEvidence(unordered_map<string, double>& evidset) {
 //set operator
 bool operator<(const Factor lhs, const Factor rhs) {
 
+	uint32_t i, lhash = 0, rhash = 0;
 	vector<string>* leftNames = lhs.getElementsName();
 	vector<string>* rightNames = rhs.getElementsName();
 	if (lhs.getVarSize() != rhs.getVarSize())
 		return lhs.getVarSize() < rhs.getVarSize();
-	uint32_t i = 0;
-	while (i < lhs.getVarSize() && (*leftNames)[i] == (*rightNames)[i])
-		i++;
-	return (i < lhs.getVarSize() && (*leftNames)[i] < (*rightNames)[i]);
+	for (i = 0; i < lhs.getVarSize(); i++)
+		lhash += hashCode((*leftNames)[i]);
+	for (i = 0; i < rhs.getVarSize(); i++)
+		rhash += hashCode((*rightNames)[i]);
+	return lhash < rhash;
 
 }

@@ -31,6 +31,8 @@ private:
 	static EngineGC engineGC;
 
 	/*--------------------------------------*/
+	int getMaxCardinalityElem(const BNet & moral, const vector<bool> & marked);
+
 public:
 
 	//constructor : 初始化联合树推理引擎
@@ -45,12 +47,23 @@ public:
 	}
 
 	//query ： 推理
-	vector<int> greedyOrdering(const BNet& bnet, Metric & foo);
-	vector<int> maxCardinalitySearch(const BNet& bnet);
 
+	//贪婪消去，特例是最小缺边搜索
+	vector<int> greedyOrdering(const BNet& moral, Metric & foo);
+
+	//最大势搜索
+	vector<int> maxCardinalitySearch(const BNet& moral, int root = 0);
+
+	//变量消元法
 	Factor variableElim(BNet& bnet, vector<string> queryset, unordered_map<string, double> evidset, vector<int> pi);
+
+	//变量消元操作
 	set<Factor>& eliminate(set<Factor>& factorset, vector<string> elimvars);
 
+	//构建联合树（贝叶斯网引论 5.6 团树的构造）
 	JTree buildJTree(BNet & bnet);
 	JTree buildJTree(BNet & bnet, vector<int>);
+
+	//端正图构造联合树（BNT Matlab ver.）
+	JTree graphToJTree(BNet & moral);
 };

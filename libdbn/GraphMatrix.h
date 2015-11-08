@@ -28,7 +28,7 @@ struct Edge {
 
 template <typename Tv, typename Te>
 class GraphMatrix : public Graph <Tv, Te> {
-private:
+protected:
 	std::vector< Vertex <Tv> > V;	//¶¥µã¼¯
 	std::vector< std::vector< Edge < Te > * > > E;	//±ß¼¯
 

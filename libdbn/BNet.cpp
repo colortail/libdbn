@@ -5,6 +5,20 @@ BNet::BNet() :type(BNET) {}
 
 BNet::~BNet() { }
 
+BNet& BNet::operator=(const BNet& bn) {
+	this->type = bn.type;
+	this->e = bn.e;
+	this->n = bn.n;
+
+	this->V = bn.V;
+	this->E = bn.E;
+	for (int i = 0; i < n; i++)
+		for (int j = firstNbr(i); -1 < j; j = nextNbr(i, j)) {
+			this->E[i][j] = new Edge <double>((bn.E[i][j])->data, (bn.E[i][j])->weight);
+		}
+	return *this;
+}
+
 void BNet::moralize() {
 
 	std::vector< std::vector<int> > pa;
@@ -35,4 +49,31 @@ void BNet::moralize() {
 	}
 
 	this->type = MORAL;
+}
+
+void BNet::introduceEdge(int k, std::vector<bool> & marked) {
+	std::vector<int> nbrs;
+	if (this->n != marked.size()) {
+		throw "添加缺边时，参数不匹配";
+	}
+	for (int u = firstNbr(k); -1 < u; u = nextNbr(k, u)) {
+		if (!marked[u])
+			nbrs.push_back(u);
+	}
+
+	for (std::vector<int>::iterator iIt = nbrs.begin();
+		iIt != nbrs.end();
+		iIt++){
+		for (std::vector<int>::iterator jIt = nbrs.begin();
+			jIt != nbrs.end();
+			jIt++) {
+			if (*iIt != *jIt && !this->exists(*iIt, *jIt)) {
+				this->insert(0, 0, *iIt, *jIt);
+			}
+		}
+	}
+}
+
+void BNet::triangulate() {
+
 }
