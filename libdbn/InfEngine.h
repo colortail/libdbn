@@ -2,12 +2,16 @@
 #include <string>
 #include "BNet.h"
 #include "JTree.h"
+#include "InferStrategy.h"
 #include "Metric.h"
+#include "InOutUtils.h"
 
 #ifndef _FACTOR_
 #define _FACTOR_
 #include "Factor.h"
 #endif
+
+enum INFERSTRATEGY {VE, JTREE};
 
 //推理算法接口
 class InfEngine{
@@ -33,6 +37,8 @@ private:
 	/*--------------------------------------*/
 	int getMaxCardinalityElem(const BNet & moral, const vector<bool> & marked);
 
+	set<Factor>& setEvidence(set<Factor>& factorset, unordered_map<string, double> &);
+
 public:
 
 	//constructor : 初始化联合树推理引擎
@@ -47,6 +53,10 @@ public:
 	}
 
 	//query ： 推理
+	Factor inference(BNet &, 
+		vector<string> &, 
+		unordered_map<string, double> &,
+		INFERSTRATEGY);
 
 	//贪婪消去，特例是最小缺边搜索
 	vector<int> greedyOrdering(const BNet& moral, Metric & foo);
@@ -55,10 +65,13 @@ public:
 	vector<int> maxCardinalitySearch(const BNet& moral, int root = 0);
 
 	//变量消元法
-	Factor variableElim(BNet& bnet, vector<string> queryset, unordered_map<string, double> evidset, vector<int> pi);
+	Factor variableElim(BNet& bnet, 
+		const vector<string> & queryset, 
+		unordered_map<string, double> & evidset,
+		const vector<int> & pi);
 
 	//变量消元操作
-	set<Factor>& eliminate(set<Factor>& factorset, vector<string> elimvars);
+	set<Factor>& eliminate(set<Factor>& factorset, vector<string>& elimvars);
 
 	//构建联合树（贝叶斯网引论 5.6 团树的构造）
 	JTree buildJTree(BNet & bnet);

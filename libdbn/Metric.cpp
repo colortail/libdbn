@@ -6,7 +6,7 @@ int MinFill::operator()(const BNet & bn, std::vector<bool> & marked) {
 	int cnt = 0;
 	int min[2] = { -1, INT_MAX };
 
-	for (int x = 0; x < tbn.vertexSize(); x++) {
+	for (uint32_t x = 0; x < tbn.vertexSize(); x++) {
 		if (marked[x])
 			continue;
 
@@ -48,3 +48,4 @@ int MinWeight::operator()(const BNet & bn, std::vector<bool> & marked) {
 int WeightedMinFill::operator()(const BNet & bn, std::vector<bool> & marked) {
 	return 0;
 }
+

@@ -1,6 +1,9 @@
 #pragma once
 #include "GraphMatrix.h"
+#include "Factor.h"
+
 #include <vector>
+#include <set>
 #include <cstdint>
 
 struct RandVar {
@@ -22,10 +25,13 @@ public:
 
 	StructType getStructType() const { return type; }
 
-	int vertexSize() const { return this->n; }
+	uint32_t vertexSize() const { return this->n; }
 
-	int edgeSize() const { return this->e; }
+	uint32_t edgeSize() const { return this->e; }
 
+	set<Factor> getCPTs() { return this->cpts; }
+
+	void setCPTs(const set<Factor>&);
 	//moralize
 	void moralize();
 
@@ -35,7 +41,10 @@ public:
 	void introduceEdge(int, std::vector<bool> &);
 
 	friend class InOutUtils;
+	//friend class InfEngine;
+
 private:
 	StructType type;
+	set<Factor> cpts;
 };
 

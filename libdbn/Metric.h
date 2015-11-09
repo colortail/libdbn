@@ -6,6 +6,7 @@
 class Metric {
 public:
 	virtual std::string getType() = 0;
+	//消去顺序标准
 	virtual int operator()(const BNet & bn, std::vector<bool>&) = 0;
 };
 

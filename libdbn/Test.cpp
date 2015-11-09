@@ -6,6 +6,7 @@
 #include "BNet.h"
 #include "Metric.h"
 #include "InfEngine.h"
+#include "InferStrategy.h"
 #include "InOutUtils.h"
 
 #include <iostream>
@@ -111,10 +112,117 @@ void bnetTest() {
 		std::cout << bn.vertex(pi[i]).name << std::endl;
 }
 
+void templatefooTest() {
+	vector<string> v1 = { "aaa", "bbb", "ccc", "dd" };
+	vector<string> v2 = { "aaa", "bbb" };
+	vector<string> ss = libdbn::get2VectorSubstract(v1, v2);
+	for (unsigned int i = 0; i < ss.size(); i++)
+		std::cout << ss[i] << std::endl;
+}
+
+void inferenceTest() {
+	BNet bn;
+	bn.insert(RandVar(0, std::string("A")));
+	bn.insert(RandVar(1, std::string("B")));
+	bn.insert(RandVar(2, std::string("C")));
+	bn.insert(RandVar(3, std::string("D")));
+	bn.insert(RandVar(4, std::string("E")));
+	bn.insert(0, 0, 0, 2);
+	bn.insert(0, 0, 0, 3);
+	bn.insert(0, 0, 2, 4);
+	bn.insert(0, 0, 1, 3);
+
+	vector<std::string> pa;
+	pa.push_back("A");
+	vector<std::string> pb;
+	pb.push_back("B");
+	vector<std::string> pc;
+	pc.push_back("A");
+	pc.push_back("C");
+	vector<std::string> pd;
+	pd.push_back("A");
+	pd.push_back("B");
+	pd.push_back("D");
+	vector<std::string> pe;
+	pe.push_back("C");
+	pe.push_back("E");
+	Factor fa(pa);
+	Factor fb(pb);
+	Factor fc(pc);
+	Factor fd(pd);
+	Factor fe(pe);
+	
+	vector<double> vp1;
+	vp1.push_back(0.7);
+	vp1.push_back(0.3);
+	vector<double> vp2;
+	vp2.push_back(0.4);
+	vp2.push_back(0.6);
+	vector<double> vp3;
+	vp3.push_back(0.6);
+	vp3.push_back(0.4);
+	vp3.push_back(0.2);
+	vp3.push_back(0.8);
+	vector<double> vp4;
+	vp4.push_back(0.8);
+	vp4.push_back(0.2);
+	vp4.push_back(0.9);
+	vp4.push_back(0.1);
+	vp4.push_back(0.2);
+	vp4.push_back(0.8);
+	vp4.push_back(0.3);
+	vp4.push_back(0.7);
+	vector<double> vp5;
+	vp5.push_back(0.8);
+	vp5.push_back(0.2);
+	vp5.push_back(0.3);
+	vp5.push_back(0.7);
+	
+	fa.setProb(vp1);
+	fb.setProb(vp2);
+	fc.setProb(vp3);
+	fd.setProb(vp4);
+	fe.setProb(vp5);
+
+	set<Factor> sfs;
+	sfs.insert(fa);
+	sfs.insert(fb);
+	sfs.insert(fc);
+	sfs.insert(fd);
+	sfs.insert(fe);
+
+	bn.setCPTs(sfs);
+
+	InfEngine* pInf = InfEngine::getInstance();
+
+	vector<string> q;
+	q.push_back("A");
+	q.push_back("D");
+	unordered_map<string, double> e;
+	e.insert({"B", 0});
+
+
+	// VE
+	//Factor result = pInf->inference(bn, q, e, VE);
+	//InOutUtils::stdPrint(result);
+	
+	//pInf->eliminate(sfs,vector<string>(1,"B"));
+	//for (auto it = sfs.begin(); it != sfs.end(); it++) {
+	//	InOutUtils::stdPrint(*it);
+	//}
+
+
+
+}
+
 int main() {
+	BenchMark bm;
 	//graphmatrixTest();
 	//factorTest();
-	bnetTest();
+	//bnetTest();
+	inferenceTest();
+	
+	bm.timeTest();
 	return 0;
 }
 

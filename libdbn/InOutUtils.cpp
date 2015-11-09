@@ -3,7 +3,7 @@
 #include <iostream>
 #include "InOutUtils.h"
 
-void InOutUtils::stdPrint(Factor & factor) {
+void InOutUtils::stdPrint(const Factor & factor) {
 	const vector<string>* pName = factor.getElementsName();
 	const vector<vector<double>>* pTable = factor.getElementsTable();
 	const vector<bool>* paMarks = factor.getParentsMark();

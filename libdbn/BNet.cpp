@@ -74,6 +74,13 @@ void BNet::introduceEdge(int k, std::vector<bool> & marked) {
 	}
 }
 
+void BNet::setCPTs(const set<Factor>& _cpts) {
+	if (_cpts.size() == this->n)
+		this->cpts = _cpts;
+	else
+		throw exception("设置有误，条件概率表个数应与网络节点个数一致");
+}
+
 void BNet::triangulate() {
 
 }

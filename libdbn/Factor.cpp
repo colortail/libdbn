@@ -13,7 +13,8 @@ Factor::~Factor() {
 Factor::Factor(const Factor& copy)
 	: factorType(copy.factorType),
 	varSize(copy.varSize),
-	rows(copy.rows){
+	rows(copy.rows),
+	hash(copy.hash) {
 
 	this->pName = new vector<string>(*copy.pName);
 	this->pLocation = new unordered_map<string, int>(*copy.pLocation);
@@ -38,6 +39,7 @@ Factor& Factor::operator=(const Factor& assign) {
 		this->factorType = assign.factorType;
 		this->varSize = assign.varSize;
 		this->rows = assign.rows;
+		this->hash = assign.hash;
 
 		this->pName = new vector<string>(*assign.pName);
 		this->pLocation = new unordered_map<string, int>(*assign.pLocation);
@@ -53,15 +55,20 @@ Factor& Factor::operator=(const Factor& assign) {
 }
 
 //默认变量为2值
+Factor::Factor()
+	: factorType(POT), rows(0), varSize(0), pParents(NULL), hash(0) {
+	newFactor(vector<string>(), vector<size_t>(0, 2));
+}
+
 Factor::Factor(const vector<string> & elems)
-	: factorType(POT), rows(1), varSize(elems.size()), pParents(NULL){
+	: factorType(POT), rows(1), varSize(elems.size()), pParents(NULL), hash(0) {
 
 	int varSize = elems.size();
 	newFactor(elems, vector<size_t>(varSize, 2));
 }
 
 Factor::Factor(const vector<string> & elems, const vector<size_t> & elemSize)
-	: factorType(POT), rows(1), varSize(elems.size()), pParents(NULL) {
+	: factorType(POT), rows(1), varSize(elems.size()), pParents(NULL),hash(0) {
 	newFactor(elems, elemSize);
 }
 
@@ -145,7 +152,7 @@ void Factor::setProb(const vector<double> & probVector) {
 	}
 }
 
-unordered_map<string, pair<int, int>> Factor::getUnion(Factor* a, Factor* b) {
+unordered_map<string, pair<int, int>> Factor::getIntersection(const Factor* a, const Factor* b) {
 	if (a == NULL || b == NULL)
 		return unordered_map<string, pair<int, int>>();
 	
@@ -171,7 +178,7 @@ unordered_map<string, pair<int, int>> Factor::getUnion(Factor* a, Factor* b) {
 }
 
 //乘
-Factor Factor::multiply(Factor & b) {
+Factor Factor::multiply(const Factor & b) const {
 
 	if (this->varSize == 0 && b.varSize == 0)
 		return Factor(vector<string>());
@@ -190,7 +197,7 @@ Factor Factor::multiply(Factor & b) {
 	size_t size;
 	int leftIdx, rightIdx;
 
-	unordered_map<string, pair<int, int>> unionSet = getUnion(this, &b);
+	unordered_map<string, pair<int, int>> unionSet = getIntersection(this, &b);
 
 	//get union variable
 	for (uint32_t i = 0; i < this->pName->size(); i++) {
@@ -274,7 +281,7 @@ Factor Factor::multiply(Factor & b) {
 }
 
 //边缘化
-Factor Factor::summation(vector<string> & varset) {
+Factor Factor::summation(vector<string> & varset) const {
 	vector<string> elemNames(*this->pName);
 	vector<size_t> elemSize;
 	vector<string>::iterator it;
@@ -301,6 +308,9 @@ Factor Factor::summation(vector<string> & varset) {
 
 	Factor result(elemNames, elemSize);
 
+	if (elemNames.size() == 0)
+		return result;
+	
 	//radix
 	for (int i = elemSize.size() - 2; i >= 0; i--) {
 		elemSize[i] *= elemSize[i + 1];
@@ -325,7 +335,7 @@ Factor Factor::summation(vector<string> & varset) {
 }
 
 //设置证据
-Factor Factor::setEvidence(unordered_map<string, double>& evidset) {
+Factor Factor::setEvidence(unordered_map<string, double>& evidset) const {
 	Factor result = *this;
 	int probLoc = result.varSize;
 	for (unordered_map<string, double>::iterator evidIt = evidset.begin();
@@ -359,18 +369,58 @@ Factor Factor::setEvidence(unordered_map<string, double>& evidset) {
 	return result;
 }
 
-//set operator
-bool operator<(const Factor lhs, const Factor rhs) {
+uint32_t Factor::hashCode() {
+	
+	if (hash == 0) {
+		int hashCode = 0;
+		vector<string>* pNames = this->getElementsName();
+		for (int i = 0; i < this->getVarSize(); i++)
+			hashCode += libdbn::hashCode((*pNames)[i]);
+		this->hash = hashCode;
+	}
+	return this->hash;
+}
 
-	uint32_t i, lhash = 0, rhash = 0;
+//set operator:参数为对象，不可为reference
+bool operator<(Factor lhs, Factor rhs) {
+
 	vector<string>* leftNames = lhs.getElementsName();
 	vector<string>* rightNames = rhs.getElementsName();
 	if (lhs.getVarSize() != rhs.getVarSize())
 		return lhs.getVarSize() < rhs.getVarSize();
-	for (i = 0; i < lhs.getVarSize(); i++)
-		lhash += hashCode((*leftNames)[i]);
-	for (i = 0; i < rhs.getVarSize(); i++)
-		rhash += hashCode((*rightNames)[i]);
-	return lhash < rhash;
+	
+	return lhs.hashCode() < rhs.hashCode();
 
+}
+
+bool Factor::exists(const string& var) const {
+
+	if (pLocation != NULL) {
+		return pLocation->find(var) != pLocation->end();
+	}
+	return false;
+}
+
+vector<string>& Factor::exists(vector<string>& commonvars, const vector<string>& varset) const {
+	
+	commonvars.clear();
+
+	if (pLocation != NULL) {
+		for (uint32_t i = 0; i < varset.size(); i++) {
+			if (pLocation->find(varset[i]) != pLocation->end()) {
+				commonvars.push_back(varset[i]);
+			}
+		}
+	}
+	return commonvars;
+}
+
+void Factor::normalize() {
+	double norm = 0;
+	for (int i = 0; i < rows; i++) {
+		norm += (*this->pTable)[i][varSize];
+	}
+	for (int i = 0; i < rows; i++) {
+		(*this->pTable)[i][varSize] /= norm;
+	}
 }

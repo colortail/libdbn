@@ -18,10 +18,10 @@ class Factor
 public:
 	Factor(const Factor&);
 	//Factor();
+	Factor();
 	Factor(const vector<string> & elems);
 	//full constructor
 	Factor(const vector<string> & elems, const vector<size_t> & elemSize);
-	void newFactor(const vector<string> & elems, const vector<size_t> & elemSize);
 
 	//destructor
 	~Factor();
@@ -56,15 +56,26 @@ public:
 	void setParents(const vector<string> & parents);
 	void setProb(const vector<double> &);
 
+	void normalize();
+
+	//某变量是否存在
+	bool exists(const string& var) const;
+
+	//varset里哪些变量存在
+	//commonvars 是结果，自动清空
+	vector<string>& exists(vector<string>& commonvars, const vector<string>& varset) const;
+
+	uint32_t hashCode();
+
 	//基本操作
 	//乘
-	Factor multiply(Factor & a);
+	Factor multiply(const Factor & a) const;
 	//边缘化(参数为被加和变量，将被消去)
-	Factor summation(vector<string> & varset);
+	Factor summation(vector<string> & varset) const;
 	//设置证据
-	Factor setEvidence(unordered_map<string, double>&);
+	Factor setEvidence(unordered_map<string, double>&) const;
 
-	friend bool operator<(const Factor lhs, const Factor rhs);
+	friend bool operator<(Factor lhs, Factor rhs);
 
 	friend class InfEngine;
 
@@ -90,12 +101,16 @@ private:
 	//变量个数（列），行数
 	uint32_t varSize;
 	uint32_t rows;
+	uint32_t hash;
+
+	void newFactor(const vector<string> & elems, const vector<size_t> & elemSize);
 	
 	//utils
 	uint32_t indexOf(string & name);
 	size_t getElemSize(string & name);
 	vector<size_t> getElemSize(vector<string> & names);
+
 	//get the same variable in two different set
-	static unordered_map<string, pair<int, int> > getUnion(Factor* a, Factor* b);
+	static unordered_map<string, pair<int, int> > getIntersection(const Factor* a, const Factor* b);
 
 };

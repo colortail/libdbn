@@ -12,5 +12,12 @@ uint32_t hashCode(std::string & str) {
 	return (hash & 0x7fffffff);
 }
 
+void BenchMark::timeTest() {
+	this->end = clock();
+	clock_t tmp = end - start;
+	printf("==================================\n");
+	printf("≤‚ ‘∫ƒ ±£∫ %d clicks (%f seconds).\n", tmp, ((float)tmp) / CLOCKS_PER_SEC);
+	printf("==================================\n");
+}
 
 }
