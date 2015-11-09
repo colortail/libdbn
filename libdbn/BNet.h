@@ -32,6 +32,14 @@ public:
 	set<Factor> getCPTs() { return this->cpts; }
 
 	void setCPTs(const set<Factor>&);
+
+	set<int>& getAllNbrs(set<int>& nbrs, int u);
+
+	vector<string> getAllNodesName();
+
+	//ÃÌº”»±±ﬂ
+	void addFillEdge(int i);
+
 	//moralize
 	void moralize();
 

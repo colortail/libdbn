@@ -21,7 +21,7 @@ public:
 template< typename T, typename VECTOR >
 bool inVector(const VECTOR & v, const T & elem) {
 	bool b = false;
-	for (int i = 0; i < v.size(); i++) {
+	for (uint32_t i = 0; i < v.size(); i++) {
 		if (v[i] == elem) {
 			b = true;
 			break;
@@ -71,7 +71,6 @@ VECTOR getVectorIntersection(const TWODIMVECTOR & v) {
 	}
 	return result;
 }
-
 
 
 }

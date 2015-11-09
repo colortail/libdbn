@@ -108,8 +108,11 @@ void bnetTest() {
 	//max cardinality
 	//vector<int> pi = pInf->maxCardinalitySearch(bn);
 	vector<int> pi = pInf->greedyOrdering(bn, MinFill());
-	for (uint32_t i = 0; i < pi.size(); i++)
-		std::cout << bn.vertex(pi[i]).name << std::endl;
+	//for (uint32_t i = 0; i < pi.size(); i++)
+	//	std::cout << bn.vertex(pi[i]).name << std::endl;
+	JTree jtree;
+	pInf->buildJTree(jtree, bn, pi);
+	//InOutUtils::stdPrintJTree(jtree);
 }
 
 void templatefooTest() {
@@ -214,6 +217,7 @@ void inferenceTest() {
 
 
 }
+
 
 int main() {
 	BenchMark bm;

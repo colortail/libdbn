@@ -1,6 +1,7 @@
 #pragma once
 #include "Factor.h"
 #include "BNet.h"
+#include "JTree.h"
 
 class InOutUtils {
 public:
@@ -10,4 +11,7 @@ public:
 
 	//ÏÔÊ¾ÍøÂçÍØÆË
 	static void stdPrintDBnet(BNet & bnet);
+
+	//ÏÔÊ¾Clique
+	static void stdPrintClique(Clique & c);
 };

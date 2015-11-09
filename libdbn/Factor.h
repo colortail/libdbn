@@ -33,7 +33,7 @@ public:
 		return pName;
 	}
 
-	vector<vector<double>>* getElementsTable() const {
+	vector< vector < double > >* getElementsTable() const {
 		return pTable;
 	}
 

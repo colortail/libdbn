@@ -1,5 +1,7 @@
 #include "InfEngine.h"
 
+InfEngine* InfEngine::m_pInstance = NULL;
+
 Factor InfEngine::inference(
 	BNet & bnet,
 	vector<string> & queryset, 
@@ -7,7 +9,8 @@ Factor InfEngine::inference(
 	INFERSTRATEGY strategy) {
 	if (strategy == VE)
 		return VariableElimination()(bnet, queryset, evidset, this);
-
+	else
+		return VariableElimination()(bnet, queryset, evidset, this);
 }
 
 vector<int> InfEngine::greedyOrdering(const BNet& moral, Metric& metric) {
@@ -26,6 +29,31 @@ vector<int> InfEngine::greedyOrdering(const BNet& moral, Metric& metric) {
 		marked[k] = true;
 	}
 	return pi;
+}
+
+//最大势，最多已标记节点的未标记元素
+int InfEngine::getMaxCardinalityElem(const BNet & moral, const vector<bool> & marked) {
+	BNet& m = const_cast<BNet&>(moral);
+
+	if (m.vertexSize() != marked.size())
+		return -1;
+
+	int cnt = 0;
+	int root[2] = { -1, -1 };
+	for (uint32_t i = 0; i < m.vertexSize(); i++) {
+		if (marked[i])
+			continue;
+		cnt = 0;
+		for (int j = m.firstNbr(i); -1 < j; j = m.nextNbr(i, j)) {
+			if (marked[j])
+				cnt++;
+		}
+		if (root[1] < cnt) {
+			root[0] = i;
+			root[1] = cnt;
+		}
+	}
+	return root[0];
 }
 
 /*
@@ -153,15 +181,54 @@ set<Factor>& InfEngine::eliminate(set<Factor>& factorset, vector<string>& elimva
 1 从 pi中删去第一个元素Z
 2 S<-nb(Z) C<-{Z} \and S
 3 if (C 包含 bnet中所有节点)
-return 以C为唯一节点的JTree
+    return 以C为唯一节点的JTree
 4 else
-bnet<-Elim(bnet, Z)
-Jtree<- buildJTree(bnet, pi)
-5 在J中找到一个包含S的团 C',将C与C'相连
-6 return J
+    bnet<-Elim(bnet, Z)
+    Jtree<- buildJTree(bnet, pi)
+5   在J中找到一个包含S的团 C',将C与C'相连
+6   return J
 */
-JTree InfEngine::buildJTree(BNet & bnet, vector<int> pi) {
-	return JTree();
+JTree& InfEngine::buildJTree(JTree & jtree, BNet & moral, vector<int> & pi) {
+	
+	assert(moral.getStructType() == MORAL);
+
+	BNet inducedGraph = moral;
+	return buildJTree(jtree, inducedGraph, pi, 0);
+}
+
+JTree& InfEngine::buildJTree(JTree & jtree, BNet & induced, vector<int> & pi, int i) {
+	set<int> nbrs;
+	Clique clique;
+	nbrs = induced.getAllNbrs(nbrs, i);
+	clique.insert(induced.vertex(i));
+	for (set<int>::iterator nbrIt = nbrs.begin();
+		nbrIt != nbrs.end();
+		nbrIt++) {
+		clique.insert(induced.vertex(*nbrIt));
+	}
+	
+	int c = jtree.insert(clique);
+
+	if (clique.isEqual(induced.getAllNodesName())) {
+		return jtree;
+	}
+	else {
+		induced.addFillEdge(i);
+		induced.remove(i);
+		jtree = buildJTree(jtree, induced, pi, i + 1);
+
+		int cp = jtree.findClique(nbrs);
+		
+		//error 这里的因子不全是2值
+		if (cp != -1) {
+			vector<string> names;
+			for (set<int>::iterator w = nbrs.begin(); w != nbrs.end(); w++)
+				names.push_back(induced.vertex(*w).name);
+			jtree.insert(Factor(names), 0, c, cp);
+			jtree.insert(Factor(names), 0, cp, c);
+		}
+	}
+
 }
 
 /*
@@ -174,30 +241,3 @@ JTree InfEngine::buildJTree(BNet & bnet, vector<int> pi) {
 JTree InfEngine::graphToJTree(BNet & moral) {
 	return JTree();
 }
-
-//最大势，最多已标记节点的未标记元素
-int InfEngine::getMaxCardinalityElem(const BNet & moral, const vector<bool> & marked) {
-	BNet& m = const_cast<BNet&>(moral);
-
-	if (m.vertexSize() != marked.size())
-		return -1;
-
-	int cnt = 0;
-	int root[2] = { -1, -1 };
-	for (uint32_t i = 0; i < m.vertexSize(); i++) {
-		if (marked[i])
-			continue;
-		cnt = 0;
-		for (int j = m.firstNbr(i); -1 < j; j = m.nextNbr(i, j)) {
-			if (marked[j])
-				cnt++;
-		}
-		if (root[1] < cnt) {
-			root[0] = i;
-			root[1] = cnt;
-		}
-	}
-	return root[0];
-}
-
-InfEngine* InfEngine::m_pInstance = NULL;

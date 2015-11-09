@@ -1,5 +1,8 @@
 #include "BNet.h"
 
+bool operator<(const RandVar var1, const RandVar var2) {
+	return var1.node < var2.node;
+}
 
 BNet::BNet() :type(BNET) {}
 
@@ -83,4 +86,33 @@ void BNet::setCPTs(const set<Factor>& _cpts) {
 
 void BNet::triangulate() {
 
+}
+
+set<int>& BNet::getAllNbrs(set<int>& nbrs, int u) {
+	nbrs.clear();
+	for (int v = firstNbr(u); -1 < v; v = nextNbr(u, v)) {
+		nbrs.insert(v);
+	}
+	return nbrs;
+}
+
+void BNet::addFillEdge(int i) {
+	vector<int> nbrs;
+	for (int j = firstNbr(i); -1 < j; j = nextNbr(i, j)) {
+		nbrs.push_back(j);
+	}
+	for (int k = 0; k < nbrs.size(); k++) {
+		for (int w = 0; w < nbrs.size(); w++) {
+			if (!exists(k,w))
+				this->insert(0, 0, k, w);
+		}
+	}
+}
+
+vector<string> BNet::getAllNodesName() {
+	vector<string> names;
+	for (int i = 0; i < this->n; i++) {
+		names.push_back(this->vertex(i).name);
+	}
+	return names;
 }

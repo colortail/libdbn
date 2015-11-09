@@ -4,6 +4,7 @@
 #include "JTree.h"
 #include "InferStrategy.h"
 #include "Metric.h"
+#include "utils.h"
 #include "InOutUtils.h"
 
 #ifndef _FACTOR_
@@ -75,7 +76,8 @@ public:
 
 	//构建联合树（贝叶斯网引论 5.6 团树的构造）
 	JTree buildJTree(BNet & bnet);
-	JTree buildJTree(BNet & bnet, vector<int>);
+	JTree& buildJTree(JTree & jtree, BNet & moral, vector<int> & pi);
+	JTree& buildJTree(JTree & jtree, BNet & moral, vector<int> & pi, int i);
 
 	//端正图构造联合树（BNT Matlab ver.）
 	JTree graphToJTree(BNet & moral);

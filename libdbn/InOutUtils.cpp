@@ -57,3 +57,44 @@ void InOutUtils::stdPrintDBnet(BNet & bnet) {
 		printf("===");
 	printf("\n");
 }
+
+void InOutUtils::stdPrintClique(Clique & c) {
+
+	for (auto setIt = c.vars.begin();
+		setIt != c.vars.end();
+		setIt++) {
+		printf("%d: %s (%s)|\t", setIt->node, setIt->name, setIt->observed ? "观察" : "未观察");
+	}
+	printf("\n");
+}
+
+//void InOutUtils::stdPrintJTree(JTree & jtree, int mode) {
+//	
+//	/*if (mode == 0) {
+//		int u, v, e = 0;
+//		printf("联合树：\n\n");
+//
+//		for (u = 0; u < jtree.n; u++) {
+//			printf("节点%d:  \n", u);
+//			stdPrintClique(jtree.vertex(u));
+//		}
+//
+//		printf("\n");
+//		printf("节点(%d)\n", jtree.n);
+//		while (u--)
+//			printf("===");
+//		printf("\n");
+//		for (u = 0; u < jtree.n; u++) {
+//			for (v = 0; v < jtree.n - u; v++) {
+//				if (jtree.exists(u, v)) {
+//					printf("(%d) -> (%d)\n",u, v);
+//					e++;
+//				}
+//			}
+//		}
+//		printf("边(%d)\n", e);
+//		while (u--)
+//			printf("===");
+//		printf("\n");
+//	}*/
+//}
