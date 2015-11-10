@@ -115,7 +115,7 @@ void Factor::setParents(const vector<string> & parents) {
 	}
 }
 
-uint32_t Factor::indexOf(string & name) {
+uint32_t Factor::indexOf(string & name) const {
 	
 	unordered_map<string, int>::iterator it = pLocation->find(name);
 	if (it != pLocation->end())
@@ -341,40 +341,29 @@ Factor Factor::setEvidence(unordered_map<string, double>& evidset) const {
 	for (unordered_map<string, double>::iterator evidIt = evidset.begin();
 		evidIt != evidset.end();
 		evidIt++) {
-		double norm = 0;
+		
 		unordered_map<string, int>::iterator locIt = result.pLocation->find(evidIt->first);
 		if (locIt != result.pLocation->end()) {
 
 			for (vector<vector<double>>::iterator cptIt = result.pTable->begin();
 				cptIt != result.pTable->end(); cptIt++) {
-				if (((*cptIt)[locIt->second] - evidIt->second) > 0.0001) {
+				if (abs((*cptIt)[locIt->second] - evidIt->second) > 0.0001) {
 					//cptIt = result.pTable->erase(cptIt);
 					(*cptIt)[probLoc] = 0;
 				}
-				else {
-					norm += (*cptIt)[probLoc];
-				}
-			}
-			//normalize
-			if (abs(norm) > 0.0001) {
-				for (vector<vector<double>>::iterator cptIt = result.pTable->begin();
-					cptIt != result.pTable->end(); cptIt++) {
-					
-					(*cptIt)[probLoc] = (*cptIt)[probLoc] / norm;
-				}
 			}
 		}
-
 	}
+	result.normalize();
 	return result;
 }
 
 uint32_t Factor::hashCode() {
 	
 	if (hash == 0) {
-		int hashCode = 0;
+		uint32_t hashCode = 0;
 		vector<string>* pNames = this->getElementsName();
-		for (int i = 0; i < this->getVarSize(); i++)
+		for (uint32_t i = 0; i < this->getVarSize(); i++)
 			hashCode += libdbn::hashCode((*pNames)[i]);
 		this->hash = hashCode;
 	}
@@ -417,10 +406,10 @@ vector<string>& Factor::exists(vector<string>& commonvars, const vector<string>&
 
 void Factor::normalize() {
 	double norm = 0;
-	for (int i = 0; i < rows; i++) {
+	for (uint32_t i = 0; i < rows; i++) {
 		norm += (*this->pTable)[i][varSize];
 	}
-	for (int i = 0; i < rows; i++) {
+	for (uint32_t i = 0; i < rows; i++) {
 		(*this->pTable)[i][varSize] /= norm;
 	}
 }

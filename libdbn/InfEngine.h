@@ -1,18 +1,20 @@
 #pragma once
-#include <string>
-#include "BNet.h"
-#include "JTree.h"
-#include "InferStrategy.h"
-#include "Metric.h"
-#include "utils.h"
-#include "InOutUtils.h"
 
 #ifndef _FACTOR_
 #define _FACTOR_
 #include "Factor.h"
 #endif
 
-enum INFERSTRATEGY {VE, JTREE};
+#include "Clique.h"
+#include "BNet.h"
+#include "JTree.h"
+#include "InferStrategy.h"
+#include "Metric.h"
+#include "utils.h"
+#include "InOutUtils.h"
+#include <string>
+
+class InferStrategy;
 
 //推理算法接口
 class InfEngine{
@@ -40,6 +42,8 @@ private:
 
 	set<Factor>& setEvidence(set<Factor>& factorset, unordered_map<string, double> &);
 
+	void initJTreeCPD(JTree & jtree, const BNet & bnet);
+
 public:
 
 	//constructor : 初始化联合树推理引擎
@@ -54,10 +58,7 @@ public:
 	}
 
 	//query ： 推理
-	Factor inference(BNet &, 
-		vector<string> &, 
-		unordered_map<string, double> &,
-		INFERSTRATEGY);
+	Factor inference(BNet &, vector<string> &, unordered_map<string, double> &, InferStrategy & strategy);
 
 	//贪婪消去，特例是最小缺边搜索
 	vector<int> greedyOrdering(const BNet& moral, Metric & foo);
@@ -77,8 +78,19 @@ public:
 	//构建联合树（贝叶斯网引论 5.6 团树的构造）
 	JTree buildJTree(BNet & bnet);
 	JTree& buildJTree(JTree & jtree, BNet & moral, vector<int> & pi);
-	JTree& buildJTree(JTree & jtree, BNet & moral, vector<int> & pi, int i);
+	JTree& buildJTree(JTree &, BNet &, vector<int> &, set<int> &, int);
 
-	//端正图构造联合树（BNT Matlab ver.）
+	/*================================*/
+	void triangulate(BNet &, vector<int>& pi);
+	//端正图构造联合树（from BNT Matlab ver.）
 	JTree graphToJTree(BNet & moral);
+	/*================================*/
+
+	//Shafer Shenoy Algorithm
+	Factor messagePropagation(BNet & bnet, vector<string> & queryset, unordered_map<string, double>& evidset);
+	void setEvidence(JTree & jtree, unordered_map<string, double> & evidset);
+
+	//Hugin Algorithm
+	Factor messagePassing(BNet & bnet, vector<string> & queryset, unordered_map<string, double>& evidset);
+
 };

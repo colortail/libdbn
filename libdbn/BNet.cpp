@@ -1,6 +1,6 @@
 #include "BNet.h"
 
-bool operator<(const RandVar var1, const RandVar var2) {
+bool operator<(const RandVar & var1, const RandVar & var2) {
 	return var1.node < var2.node;
 }
 
@@ -23,6 +23,9 @@ BNet& BNet::operator=(const BNet& bn) {
 }
 
 void BNet::moralize() {
+
+	if (this->type == MORAL)
+		return;
 
 	std::vector< std::vector<int> > pa;
 	for (int u = 0; u < this->n; u++) {
@@ -84,27 +87,25 @@ void BNet::setCPTs(const set<Factor>& _cpts) {
 		throw exception("设置有误，条件概率表个数应与网络节点个数一致");
 }
 
-void BNet::triangulate() {
-
-}
-
-set<int>& BNet::getAllNbrs(set<int>& nbrs, int u) {
-	nbrs.clear();
+set<int> BNet::getAllNbrs(const set<int>& restNode, int u) {
+	set<int> nbrs;
 	for (int v = firstNbr(u); -1 < v; v = nextNbr(u, v)) {
-		nbrs.insert(v);
+		if (restNode.find(v) != restNode.end())
+			nbrs.insert(v);
 	}
 	return nbrs;
 }
 
-void BNet::addFillEdge(int i) {
+void BNet::addFillEdge(int i, set<int> & restNode) {
 	vector<int> nbrs;
 	for (int j = firstNbr(i); -1 < j; j = nextNbr(i, j)) {
-		nbrs.push_back(j);
+		if (restNode.find(j) != restNode.end())
+			nbrs.push_back(j);
 	}
-	for (int k = 0; k < nbrs.size(); k++) {
-		for (int w = 0; w < nbrs.size(); w++) {
-			if (!exists(k,w))
-				this->insert(0, 0, k, w);
+	for (uint32_t k = 0; k < nbrs.size(); k++) {
+		for (uint32_t w = 0; w < nbrs.size(); w++) {
+			if (k != w && !exists(nbrs[k], nbrs[k]))
+				this->insert(0, 0, nbrs[k], nbrs[w]);
 		}
 	}
 }

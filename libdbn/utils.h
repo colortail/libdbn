@@ -1,5 +1,5 @@
 #pragma once
-#include <cstdint>
+#include <stdint.h>
 #include <string>
 #include <ctime>
 #include <vector>
@@ -10,10 +10,13 @@ uint32_t hashCode(std::string & str);
 
 class BenchMark {
 private:
+	std::string benchMark;
 	clock_t start;
 	clock_t end;
 public:
-	BenchMark() { start = clock(); }
+	BenchMark() : benchMark("") { start = clock(); }
+	BenchMark(std::string & name) : benchMark(name) { start = clock(); }
+
 	inline void clear() { start = clock(); }
 	void timeTest();
 };
@@ -58,6 +61,18 @@ VECTOR get2VectorSubstract(const VECTOR & v1, const VECTOR & v2) {
 			diff.push_back(v1[i]);
 	}
 	return diff;
+}
+
+template<typename VECTOR, typename MAP>
+VECTOR getVectorMAPUnion(const VECTOR & v1, const MAP & v2) {
+	typename VECTOR addition;
+	addition = v1;
+	for (auto it = v2.begin();
+		it != v2.end();
+		it++) {
+		addition.push_back(it->first);
+	}
+	return addition;
 }
 
 template<typename VECTOR, typename TWODIMVECTOR>

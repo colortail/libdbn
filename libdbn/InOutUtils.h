@@ -1,7 +1,13 @@
 #pragma once
 #include "Factor.h"
 #include "BNet.h"
+#include "Clique.h"
 #include "JTree.h"
+
+struct UndirectEdge;
+
+class Clique;
+class JTree;
 
 class InOutUtils {
 public:
@@ -13,5 +19,14 @@ public:
 	static void stdPrintDBnet(BNet & bnet);
 
 	//œ‘ æClique
-	static void stdPrintClique(Clique & c);
+	static void stdPrintClique(const Clique & c);
+
+	//œ‘ æJunction Tree
+	static void stdPrintJTree(JTree & jtree, int mode = 0);
+};
+
+static const char* RANDVARTYPE[] = {
+	"unobserved",
+	"observed",
+	"hidden"
 };

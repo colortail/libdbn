@@ -75,7 +75,8 @@ GraphMatrix<Tv, Te>::~GraphMatrix()
 	//边记录是动态申请的，在析构函数中清除
 	for (int j = 0; j < Graph<Tv, Te>::n; j++)
 		for (int k = 0; k < Graph<Tv, Te>::n; k++)
-			delete E[j][k];
+			if (E[j][k] != NULL)
+				delete E[j][k];
 }
 
 template <typename Tv, typename Te>

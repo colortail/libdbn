@@ -1,5 +1,12 @@
 #include "Clique.h"
 
+bool operator<(const UndirectEdge & ue1, const UndirectEdge & ue2) {
+	if (ue1.i != ue2.i)
+		return ue1.i < ue2.i;
+	else
+		return ue1.j < ue2.j;
+}
+
 bool Clique::isEqual(vector<string>& elems) {
 	if (vars.size() == 0 || vars.size() != elems.size())
 		return false;
@@ -23,21 +30,75 @@ bool Clique::isEqual(vector<string>& elems) {
 	return true;
 }
 
+bool Clique::isEqual(set<int>& elems) {
+	if (vars.size() == 0 || vars.size() != elems.size())
+		return false;
+	bool isContain = false;
+	for (set<RandVar>::iterator it = vars.begin();
+		it != vars.end();
+		it++) {
+
+		isContain = false;
+		for (set<int>::iterator setIt = elems.begin(); setIt != elems.end(); setIt++) {
+			if (it->node == *setIt) {
+				isContain = true;
+				break;
+			}
+		}
+		if (isContain)
+			continue;
+		else
+			return false;
+	}
+	return true;
+}
+
 bool Clique::isContain(set<int>& varset) {
+	if (this->vars.size() == 0)
+		return false;
+
 	for (set<int>::iterator it = varset.begin();
 		it != varset.end();
 		it++) {
-		if (this->vars.find(RandVar(*it, string(""))) != vars.end()) {
+		RandVar rdVar(*it, string(""));
+		if (this->vars.find(rdVar) == vars.end()) {
 			return false;
 		}
 	}
 	return true;
 }
 
-void Clique::insert(RandVar & var) {
+bool Clique::isContain(vector<string>& varset) {
+	if (this->vars.size() == 0)
+		return false;
+	bool singleContain = false;
+	for (vector<string>::iterator it = varset.begin();
+		it != varset.end();
+		it++) {
+
+		singleContain = false;
+		for (set<RandVar>::iterator rdvIt = this->vars.begin();
+			rdvIt != this->vars.end();
+			rdvIt++) {
+			if (rdvIt->name == *it) {
+				singleContain = true;
+				break;
+			}
+		}
+		if (!singleContain)
+			return false;
+	}
+	return true;
+}
+
+void Clique::insert(const RandVar & var) {
 	vars.insert(var);
 }
 
-void Clique::insert(Factor & factor) {
+void Clique::insert(const Factor & factor) {
 	pots.insert(factor);
+}
+
+set<Factor>& Clique::getPots() {
+	return this->pots;
 }

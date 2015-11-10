@@ -6,11 +6,9 @@ Factor InfEngine::inference(
 	BNet & bnet,
 	vector<string> & queryset, 
 	unordered_map<string, double> & evidset,
-	INFERSTRATEGY strategy) {
-	if (strategy == VE)
-		return VariableElimination()(bnet, queryset, evidset, this);
-	else
-		return VariableElimination()(bnet, queryset, evidset, this);
+	InferStrategy & strategy) {
+
+	return strategy(bnet, queryset, evidset, this);
 }
 
 vector<int> InfEngine::greedyOrdering(const BNet& moral, Metric& metric) {
@@ -126,9 +124,10 @@ Factor InfEngine::variableElim(BNet& bnet,
 		//set evidence
 		factorset = this->setEvidence(factorset, evidset);
 		//do elimination
+		vector<string> resultVars = libdbn::getVectorMAPUnion(queryset, evidset);
 		for (uint32_t i = 0; i < pi.size(); i++) {
 			//这里乘的是所有包含变量 bnet.vertex(pi[i]).name 的所有因子
-			if (!libdbn::inVector(queryset, bnet.vertex(pi[i]).name)) {
+			if (!libdbn::inVector(resultVars, bnet.vertex(pi[i]).name)) {
 				factorset = eliminate(factorset, vector<string>(1, bnet.vertex(pi[i]).name));
 			}
 		}
@@ -185,50 +184,77 @@ set<Factor>& InfEngine::eliminate(set<Factor>& factorset, vector<string>& elimva
 4 else
     bnet<-Elim(bnet, Z)
     Jtree<- buildJTree(bnet, pi)
-5   在J中找到一个包含S的团 C',将C与C'相连
-6   return J
+5 在J中找到一个包含S的团 C',将C与C'相连
+6 return J
 */
 JTree& InfEngine::buildJTree(JTree & jtree, BNet & moral, vector<int> & pi) {
 	
 	assert(moral.getStructType() == MORAL);
+	
+	if (pi.size() != moral.vertexSize())
+		return jtree;
 
-	BNet inducedGraph = moral;
-	return buildJTree(jtree, inducedGraph, pi, 0);
+	BNet inducedGraph;
+	inducedGraph = moral;
+
+	inducedGraph.moralize();
+	set<int> restNode;
+	for (uint32_t i = 0; i < moral.vertexSize(); i++)
+		restNode.insert(i);
+
+	return buildJTree(jtree, inducedGraph, pi, restNode, 0);
 }
 
-JTree& InfEngine::buildJTree(JTree & jtree, BNet & induced, vector<int> & pi, int i) {
-	set<int> nbrs;
+JTree& InfEngine::buildJTree(JTree & jtree, BNet & induced, vector<int> & pi, set<int> & restNode, int i) {
+	if (pi.size() <= (uint32_t)i)
+		return jtree;
+	int currentElem = pi[i];
 	Clique clique;
-	nbrs = induced.getAllNbrs(nbrs, i);
-	clique.insert(induced.vertex(i));
-	for (set<int>::iterator nbrIt = nbrs.begin();
+	set<int> nbrs = induced.getAllNbrs(restNode, currentElem);
+
+	clique.insert(induced.vertex(currentElem));
+
+	for (set<int>::const_iterator nbrIt = nbrs.begin();
 		nbrIt != nbrs.end();
 		nbrIt++) {
-		clique.insert(induced.vertex(*nbrIt));
+		if (restNode.find(*nbrIt) != restNode.end())
+			clique.insert(induced.vertex(*nbrIt));
 	}
 	
-	int c = jtree.insert(clique);
+	int c = jtree.insert(clique) - 1;
 
-	if (clique.isEqual(induced.getAllNodesName())) {
+	if (clique.isEqual(restNode)) {
 		return jtree;
 	}
 	else {
-		induced.addFillEdge(i);
-		induced.remove(i);
-		jtree = buildJTree(jtree, induced, pi, i + 1);
+		induced.addFillEdge(currentElem, restNode);
+		//induced.remove(i);
+		restNode.erase(currentElem);
+		jtree = buildJTree(jtree, induced, pi, restNode, i + 1);
 
-		int cp = jtree.findClique(nbrs);
-		
-		//error 这里的因子不全是2值
-		if (cp != -1) {
-			vector<string> names;
-			for (set<int>::iterator w = nbrs.begin(); w != nbrs.end(); w++)
-				names.push_back(induced.vertex(*w).name);
-			jtree.insert(Factor(names), 0, c, cp);
-			jtree.insert(Factor(names), 0, cp, c);
+	}
+	vector<int> cp = jtree.findClique(nbrs);
+
+	if (!cp.empty()) {
+		for (uint32_t i = 0; i < cp.size(); i++) {
+			if (cp[i] == c)
+				continue;
+			
+			//separator被多个clique满足时
+			//任取一个clique即可,根据不同的条件可能产生不同的junction tree
+			//（此处取最先生成的那个clique）
+			vector<string> separator;
+			vector<size_t> separatorSize;
+			for (set<int>::iterator w = nbrs.begin(); w != nbrs.end(); w++) {
+				separator.push_back(induced.vertex(*w).name);
+				separatorSize.push_back(induced.vertex(*w).range ? induced.vertex(*w).range : 2);
+			}
+			jtree.insert(Factor(separator, separatorSize), 0, c, cp[i]);
+			jtree.insert(Factor(separator, separatorSize), 0, cp[i], c);
+			break;
 		}
 	}
-
+	return jtree;
 }
 
 /*
@@ -241,3 +267,44 @@ JTree& InfEngine::buildJTree(JTree & jtree, BNet & induced, vector<int> & pi, in
 JTree InfEngine::graphToJTree(BNet & moral) {
 	return JTree();
 }
+
+void InfEngine::initJTreeCPD(JTree & jtree, const BNet & bnet) {
+	set<Factor> factorset = bnet.getCPTs();
+	for (set<Factor>::iterator setIt = factorset.begin();
+		setIt != factorset.end();
+		setIt++) {
+		jtree.setProb(*setIt);
+	}
+}
+
+void InfEngine::setEvidence(JTree & jtree, unordered_map<string, double> & evidset) {
+	for (int i = 0; i < jtree.getVertexSize(); i++) {
+		setEvidence(jtree.vertex(i).getPots(), evidset);
+	}
+}
+
+//Shafer Shenoy Algorithm
+Factor InfEngine::messagePropagation(BNet & bnet,
+	vector<string> & queryset, 
+	unordered_map<string, double>& evidset) {
+	
+	JTree jtree;
+
+	vector<int> pi = this->greedyOrdering(bnet, MinFill());
+	JTree jtree = buildJTree(jtree, bnet, pi);
+	initJTreeCPD(jtree, bnet);
+	
+	int root = jtree.getRoot(queryset);
+	if (root == -1)
+		return Factor();
+
+	for (int nbr = jtree.firstNbr(root); -1 < nbr; nbr = jtree.nextNbr(root, nbr)) {
+		
+	}
+
+}
+
+//Hugin Algorithm
+Factor InfEngine::messagePassing(BNet & bnet,
+	vector<string> & queryset,
+	unordered_map<string, double>& evidset) { }

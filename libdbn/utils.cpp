@@ -16,7 +16,8 @@ void BenchMark::timeTest() {
 	this->end = clock();
 	clock_t tmp = end - start;
 	printf("==================================\n");
-	printf("测试耗时： %d clicks (%f seconds).\n", tmp, ((float)tmp) / CLOCKS_PER_SEC);
+	printf("\t%s测试:\t\n", this->benchMark.empty() ? "基准" : this->benchMark.c_str());
+	printf("耗时： %d clicks (%f seconds).\n", tmp, ((float)tmp) / CLOCKS_PER_SEC);
 	printf("==================================\n");
 }
 

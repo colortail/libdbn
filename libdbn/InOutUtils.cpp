@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdio>
 #include <iostream>
+#include <set>
 #include "InOutUtils.h"
 
 void InOutUtils::stdPrint(const Factor & factor) {
@@ -58,43 +59,55 @@ void InOutUtils::stdPrintDBnet(BNet & bnet) {
 	printf("\n");
 }
 
-void InOutUtils::stdPrintClique(Clique & c) {
-
+void InOutUtils::stdPrintClique(const Clique & c) {
+	
 	for (auto setIt = c.vars.begin();
 		setIt != c.vars.end();
 		setIt++) {
-		printf("%d: %s (%s)|\t", setIt->node, setIt->name, setIt->observed ? "观察" : "未观察");
+		printf("%d: %s (%s)|\t", setIt->node, setIt->name.c_str(), RANDVARTYPE[setIt->type]);
 	}
 	printf("\n");
 }
 
-//void InOutUtils::stdPrintJTree(JTree & jtree, int mode) {
-//	
-//	/*if (mode == 0) {
-//		int u, v, e = 0;
-//		printf("联合树：\n\n");
-//
-//		for (u = 0; u < jtree.n; u++) {
-//			printf("节点%d:  \n", u);
-//			stdPrintClique(jtree.vertex(u));
-//		}
-//
-//		printf("\n");
-//		printf("节点(%d)\n", jtree.n);
-//		while (u--)
-//			printf("===");
-//		printf("\n");
-//		for (u = 0; u < jtree.n; u++) {
-//			for (v = 0; v < jtree.n - u; v++) {
-//				if (jtree.exists(u, v)) {
-//					printf("(%d) -> (%d)\n",u, v);
-//					e++;
-//				}
-//			}
-//		}
-//		printf("边(%d)\n", e);
-//		while (u--)
-//			printf("===");
-//		printf("\n");
-//	}*/
-//}
+void InOutUtils::stdPrintJTree(JTree & jtree, int mode) {
+	
+	int u, v, e = 0;
+	printf("联合树：\n\n");
+
+	for (u = 0; u < jtree.n; u++) {
+		printf("节点%d:  \n", u);
+		stdPrintClique(jtree.vertex(u));
+	}
+
+	printf("\n");
+	printf("节点(%d)\n", jtree.n);
+	while (u--)
+		printf("===");
+	printf("\n");
+
+	if (mode == 0) {
+		set<UndirectEdge> edges;
+		for (u = 0; u < jtree.n; u++) {
+			for (v = jtree.firstNbr(u); -1 < v; v = jtree.nextNbr(u, v)) {
+				edges.insert(UndirectEdge(u,v));
+			}
+		}
+		for (set<UndirectEdge>::iterator it = edges.begin();
+			it != edges.end();
+			it++) {
+			printf("(%d) -> (%d)\n", it->i, it->j);
+		}
+		printf("\n");
+		printf("边(%d)\n", edges.size());
+		while (u--)
+			printf("===");
+		printf("\n");
+	}
+	else if (mode == 1) {
+		for (u = 0; u < jtree.n; u++) {
+			for (v = jtree.firstNbr(u); -1 < v; v = jtree.nextNbr(u, v)) {
+				printf("(%d) -> (%d)\n", u, v);
+			}
+		}
+	}
+}

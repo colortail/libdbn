@@ -65,6 +65,11 @@ public:
 	//commonvars 是结果，自动清空
 	vector<string>& exists(vector<string>& commonvars, const vector<string>& varset) const;
 
+	//utils
+	uint32_t indexOf(string & name) const;
+	size_t getElemSize(string & name);
+	vector<size_t> getElemSize(vector<string> & names);
+
 	uint32_t hashCode();
 
 	//基本操作
@@ -104,11 +109,6 @@ private:
 	uint32_t hash;
 
 	void newFactor(const vector<string> & elems, const vector<size_t> & elemSize);
-	
-	//utils
-	uint32_t indexOf(string & name);
-	size_t getElemSize(string & name);
-	vector<size_t> getElemSize(vector<string> & names);
 
 	//get the same variable in two different set
 	static unordered_map<string, pair<int, int> > getIntersection(const Factor* a, const Factor* b);

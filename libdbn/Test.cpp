@@ -2,12 +2,14 @@
 //#pragma comment(lib,"pthreadVCE2.lib")
 //#pragma comment(lib,"libdbn.lib")
 #include "GraphMatrix.h"
+#include "Clique.h"
 #include "Factor.h"
 #include "BNet.h"
 #include "Metric.h"
 #include "InfEngine.h"
 #include "InferStrategy.h"
 #include "InOutUtils.h"
+#include "JTree.h"
 
 #include <iostream>
 #include <vector>
@@ -76,7 +78,7 @@ void factorTest() {
 	evidset.insert({ "A", 0 });
 	InOutUtils::stdPrint(fact1);
 	InOutUtils::stdPrint(fact1.summation(pa));
-	//InOutUtils::stdPrint(fact1.setEvidence(evidset));
+	InOutUtils::stdPrint(fact1.setEvidence(evidset));
 }
 
 void bnetTest() {
@@ -107,12 +109,15 @@ void bnetTest() {
 	InfEngine* pInf = InfEngine::getInstance();
 	//max cardinality
 	//vector<int> pi = pInf->maxCardinalitySearch(bn);
-	vector<int> pi = pInf->greedyOrdering(bn, MinFill());
-	//for (uint32_t i = 0; i < pi.size(); i++)
-	//	std::cout << bn.vertex(pi[i]).name << std::endl;
+	//vector<int> pi = pInf->greedyOrdering(bn, MinFill());
+	vector<int> pi = {0,5,6,1,7,3,2,4};
+	////for (uint32_t i = 0; i < pi.size(); i++)
+	////	std::cout << bn.vertex(pi[i]).name << std::endl;
+	
+	//build jtree algorithm 1
 	JTree jtree;
 	pInf->buildJTree(jtree, bn, pi);
-	//InOutUtils::stdPrintJTree(jtree);
+	InOutUtils::stdPrintJTree(jtree);
 }
 
 void templatefooTest() {
@@ -121,6 +126,11 @@ void templatefooTest() {
 	vector<string> ss = libdbn::get2VectorSubstract(v1, v2);
 	for (unsigned int i = 0; i < ss.size(); i++)
 		std::cout << ss[i] << std::endl;
+}
+
+void cliqueTest() {
+	Clique c;
+	InOutUtils::stdPrintClique(c);
 }
 
 void inferenceTest() {
@@ -196,25 +206,27 @@ void inferenceTest() {
 
 	bn.setCPTs(sfs);
 
-	InfEngine* pInf = InfEngine::getInstance();
-
 	vector<string> q;
+	//q.push_back("C");
 	q.push_back("A");
-	q.push_back("D");
+	//q.push_back("D");
 	unordered_map<string, double> e;
-	e.insert({"B", 0});
+	//e.insert({"A", 0});
+	//e.insert({ "E", 1 });
+	e.insert({ "D", 0 });
 
 
+	InfEngine* pInf = InfEngine::getInstance();
 	// VE
-	//Factor result = pInf->inference(bn, q, e, VE);
-	//InOutUtils::stdPrint(result);
+	Factor result = pInf->inference(bn, q, e, VariableElimination());
+	InOutUtils::stdPrint(result);
 	
 	//pInf->eliminate(sfs,vector<string>(1,"B"));
 	//for (auto it = sfs.begin(); it != sfs.end(); it++) {
 	//	InOutUtils::stdPrint(*it);
 	//}
 
-
+	//Jtree
 
 }
 
@@ -223,8 +235,8 @@ int main() {
 	BenchMark bm;
 	//graphmatrixTest();
 	//factorTest();
-	//bnetTest();
-	inferenceTest();
+	bnetTest();
+	//inferenceTest();
 	
 	bm.timeTest();
 	return 0;
