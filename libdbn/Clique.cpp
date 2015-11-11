@@ -102,3 +102,28 @@ void Clique::insert(const Factor & factor) {
 set<Factor>& Clique::getPots() {
 	return this->pots;
 }
+
+set<string> Clique::containElements(const vector<string> & varset) {
+	set<string> elems;
+	for (int i = 0; i < varset.size(); i++) {
+		for (set<RandVar>::iterator jIt = this->vars.begin();
+			jIt != this->vars.end();
+			jIt++) {
+
+			if (jIt->name == varset[i])
+				elems.insert(varset[i]);
+		}
+	}
+	return elems;
+}
+
+Factor Clique::getCliqueInitPotential() {
+	Factor factor;
+	for (set<Factor>::iterator it = this->pots.begin();
+		it != this->pots.end();
+		it++) {
+
+		factor = factor.multiply(*it);
+	}
+	return factor;
+}

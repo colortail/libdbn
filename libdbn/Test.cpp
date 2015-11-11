@@ -218,7 +218,17 @@ void inferenceTest() {
 
 	InfEngine* pInf = InfEngine::getInstance();
 	// VE
-	Factor result = pInf->inference(bn, q, e, VariableElimination());
+	//Factor result = pInf->inference(bn, q, e, VariableElimination());
+	//Junction Tree
+	//bn.moralize();
+	//vector<int> pi = pInf->greedyOrdering(bn, MinFill());
+	
+	//JTree jtree;
+	//pInf->buildJTree(jtree, bn, pi);
+	//InOutUtils::stdPrintJTree(jtree, 1);
+
+	Factor result = pInf->inference(bn, q, e, JTreeInference());
+
 	InOutUtils::stdPrint(result);
 	
 	//pInf->eliminate(sfs,vector<string>(1,"B"));
@@ -235,8 +245,9 @@ int main() {
 	BenchMark bm;
 	//graphmatrixTest();
 	//factorTest();
-	bnetTest();
-	//inferenceTest();
+	
+	//bnetTest();
+	inferenceTest();
 	
 	bm.timeTest();
 	return 0;

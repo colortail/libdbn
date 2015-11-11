@@ -189,8 +189,9 @@ set<Factor>& InfEngine::eliminate(set<Factor>& factorset, vector<string>& elimva
 */
 JTree& InfEngine::buildJTree(JTree & jtree, BNet & moral, vector<int> & pi) {
 	
-	assert(moral.getStructType() == MORAL);
-	
+	if (moral.getStructType() != MORAL)
+		moral.moralize();
+
 	if (pi.size() != moral.vertexSize())
 		return jtree;
 
@@ -221,7 +222,8 @@ JTree& InfEngine::buildJTree(JTree & jtree, BNet & induced, vector<int> & pi, se
 			clique.insert(induced.vertex(*nbrIt));
 	}
 	
-	int c = jtree.insert(clique) - 1;
+	int c = jtree.insert(clique);
+	c--;
 
 	if (clique.isEqual(restNode)) {
 		return jtree;
@@ -278,33 +280,45 @@ void InfEngine::initJTreeCPD(JTree & jtree, const BNet & bnet) {
 }
 
 void InfEngine::setEvidence(JTree & jtree, unordered_map<string, double> & evidset) {
-	for (int i = 0; i < jtree.getVertexSize(); i++) {
+	for (uint32_t i = 0; i < jtree.getVertexSize(); i++) {
 		setEvidence(jtree.vertex(i).getPots(), evidset);
 	}
 }
 
 //Shafer Shenoy Algorithm
 Factor InfEngine::messagePropagation(BNet & bnet,
+	JTree & jtree,
 	vector<string> & queryset, 
-	unordered_map<string, double>& evidset) {
+	unordered_map<string, double>& evidset,
+	vector<int> & pi) {
 	
-	JTree jtree;
-
-	vector<int> pi = this->greedyOrdering(bnet, MinFill());
-	JTree jtree = buildJTree(jtree, bnet, pi);
-	initJTreeCPD(jtree, bnet);
-	
+	this->initJTreeCPD(jtree, bnet);
 	int root = jtree.getRoot(queryset);
-	if (root == -1)
-		return Factor();
-
+	
+	//collection phase
 	for (int nbr = jtree.firstNbr(root); -1 < nbr; nbr = jtree.nextNbr(root, nbr)) {
-		
+		jtree.collectMessage(root, nbr);
 	}
 
+	//distribution phase
+	for (int nbr = jtree.firstNbr(root); -1 < nbr; nbr = jtree.nextNbr(root, nbr)) {
+		jtree.distributeMessage(root, nbr);
+	}
+
+	//posterior computaion
+	Factor posterior;
+	vector<int> cqs = jtree.findCoverClique(queryset);
+	//覆盖证据的所有团
+	for (uint32_t i = 0; i < cqs.size(); i++) {
+		posterior = posterior.multiply(jtree.getCliquePotential(cqs[i]));
+	}
+	vector<string> querySup = libdbn::get2VectorSubstract(*posterior.getElementsName(), queryset);
+	return posterior.summation(querySup).normalize();
 }
 
 //Hugin Algorithm
 Factor InfEngine::messagePassing(BNet & bnet,
 	vector<string> & queryset,
-	unordered_map<string, double>& evidset) { }
+	unordered_map<string, double>& evidset) { 
+	return Factor();
+}

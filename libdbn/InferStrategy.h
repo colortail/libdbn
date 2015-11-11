@@ -18,3 +18,11 @@ public:
 		unordered_map<string, double> & evidset,
 		InfEngine* infEngine);
 };
+
+class JTreeInference : public InferStrategy {
+public:
+	virtual Factor operator()(BNet & bnet,
+		vector<string> & queryset,
+		unordered_map<string, double> & evidset,
+		InfEngine* infEngine);
+};

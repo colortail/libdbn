@@ -24,6 +24,7 @@ struct RandVar {
 	friend bool operator<(const RandVar & var1, const RandVar & var2);
 };
 
+class Factor;
 
 //in fact,it is a DAG
 class BNet : public GraphMatrix<RandVar, double>
@@ -39,27 +40,29 @@ public:
 
 	uint32_t edgeSize() const { return this->e; }
 
-	set<Factor> getCPTs() const { return this->cpts; }
+	std::set<Factor> getCPTs() const;
 
-	void setCPTs(const set<Factor>&);
+	void setCPTs(const std::set<Factor>&);
 
-	set<int> getAllNbrs(const set<int>& restNode, int u);
+	std::set<int> getAllNbrs(const std::set<int>& restNode, int u);
 
-	vector<string> getAllNodesName();
+	std::vector<std::string> getAllNodesName();
 
 	//ÃÌº”»±±ﬂ
-	void addFillEdge(int i, set<int> & restNode);
+	void addFillEdge(int i, std::set<int> & restNode);
 
 	//moralize
 	void moralize();
 
 	void introduceEdge(int, std::vector<bool> &);
 
+	void correctNode();
+
 	friend class InOutUtils;
 	//friend class InfEngine;
 
 private:
 	StructType type;
-	set<Factor> cpts;
+	std::set<Factor> cpts;
 };
 

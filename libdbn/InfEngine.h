@@ -87,7 +87,12 @@ public:
 	/*================================*/
 
 	//Shafer Shenoy Algorithm
-	Factor messagePropagation(BNet & bnet, vector<string> & queryset, unordered_map<string, double>& evidset);
+	Factor messagePropagation(BNet & bnet,
+		JTree & jtree,
+		vector<string> & queryset,
+		unordered_map<string, double>& evidset,
+		vector<int> & pi);
+
 	void setEvidence(JTree & jtree, unordered_map<string, double> & evidset);
 
 	//Hugin Algorithm

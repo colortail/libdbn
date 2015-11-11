@@ -71,7 +71,21 @@ Factor::Factor(const vector<string> & elems, const vector<size_t> & elemSize)
 	: factorType(POT), rows(1), varSize(elems.size()), pParents(NULL),hash(0) {
 	newFactor(elems, elemSize);
 }
+Factor::Factor(const vector<RandVar> & randVars)
+	: factorType(POT), rows(1), varSize(randVars.size()), pParents(NULL), hash(0){
+	
+	vector<string> elems;
+	vector<size_t> elemSize;
+	for (vector<RandVar>::const_iterator varIt = randVars.begin();
+		varIt != randVars.end();
+		varIt++) {
 
+		elems.push_back(varIt->name);
+		elemSize.push_back(varIt->range ? varIt->range : 2);
+	}
+
+	newFactor(elems, elemSize);
+}
 void Factor::newFactor(const vector<string> & elems, const vector<size_t> & elemSize) {
 
 	if (elems.size() != elemSize.size()) {
@@ -404,7 +418,7 @@ vector<string>& Factor::exists(vector<string>& commonvars, const vector<string>&
 	return commonvars;
 }
 
-void Factor::normalize() {
+Factor& Factor::normalize() {
 	double norm = 0;
 	for (uint32_t i = 0; i < rows; i++) {
 		norm += (*this->pTable)[i][varSize];
@@ -412,4 +426,17 @@ void Factor::normalize() {
 	for (uint32_t i = 0; i < rows; i++) {
 		(*this->pTable)[i][varSize] /= norm;
 	}
+	return *this;
+}
+
+vector<double> Factor::getProbVector() const {
+	
+	if (this->pTable == NULL)
+		return vector<double>();
+
+	vector<double> prob;
+	for (uint32_t i = 0; i < this->getRowsSize(); i++) {
+		prob.push_back((*this->pTable)[i][this->varSize]);
+	}
+	return prob;
 }

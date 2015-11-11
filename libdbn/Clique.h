@@ -31,8 +31,13 @@ public:
 	void insert(const RandVar & var);
 	void insert(const Factor & factor);
 
+	set<string> containElements(const vector<string>&);
+
 	set<Factor>& getPots();
 
+	Factor getCliqueInitPotential();
+
+	friend class JTree;
 	friend class InOutUtils;
 };
 

@@ -87,5 +87,18 @@ VECTOR getVectorIntersection(const TWODIMVECTOR & v) {
 	return result;
 }
 
+template<typename VECTOR, typename SET>
+VECTOR & removeElements(VECTOR & v, const SET & s) {
+	typename VECTOR::iterator iter;
+	for (iter = v.begin(); iter != v.end(); ) {
+		if (s.find(*iter) != s.end()) {
+			iter = v.erase(iter);
+		}
+		else
+			iter++;
+	}
+	return v;
+}
+
 
 }

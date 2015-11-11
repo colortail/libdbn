@@ -2,7 +2,19 @@
 #include <stdio.h>
 #include <vector>
 #include <iostream>
-//#include "DBNet.h"
+
+#include "BNet.h"
+#include "Clique.h"
+#include "DBNet.h"
+#include "Factor.h"
+#include "Graph.h"
+#include "GraphMatrix.h"
+#include "InfEngine.h"
+#include "InferStrategy.h"
+#include "InOutUtils.h"
+#include "JTree.h"
+#include "Metric.h"
+#include "utils.h"
 
 #ifndef BUILD_DLL
 #define DLLEXPORT extern "C" __declspec(dllexport) 
@@ -21,9 +33,12 @@ static PyObject * libdbnError;
 //static DBNet dbnet;
 static std::vector<std::string> strs;
 
+void inferenceTest();
+
 // c/c++ native function
 int my_c_function(const char * arg) {
 	int n = system(arg);
+	
 	return n;
 }
 
@@ -64,3 +79,5 @@ static PyObject* showString(PyObject* self, PyObject *args) {
 	Py_INCREF(Py_None);
 	return Py_None;
 }
+
+

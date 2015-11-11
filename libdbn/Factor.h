@@ -5,6 +5,8 @@
 #include <string>
 #include <cassert>
 #include <cstdint>
+
+#include "BNet.h"
 #include "utils.h"
 
 using namespace std;
@@ -12,6 +14,8 @@ using namespace libdbn;
 
 //CPD条件概率分布，POT势函数
 enum FactorType { CPD, POT };
+
+struct RandVar;
 
 class Factor
 {
@@ -23,6 +27,7 @@ public:
 	//full constructor
 	Factor(const vector<string> & elems, const vector<size_t> & elemSize);
 
+	Factor(const vector<RandVar> & randVars);
 	//destructor
 	~Factor();
 	Factor& operator=(const Factor&);
@@ -56,7 +61,7 @@ public:
 	void setParents(const vector<string> & parents);
 	void setProb(const vector<double> &);
 
-	void normalize();
+	Factor& normalize();
 
 	//某变量是否存在
 	bool exists(const string& var) const;
@@ -69,7 +74,7 @@ public:
 	uint32_t indexOf(string & name) const;
 	size_t getElemSize(string & name);
 	vector<size_t> getElemSize(vector<string> & names);
-
+	vector<double> getProbVector() const;
 	uint32_t hashCode();
 
 	//基本操作

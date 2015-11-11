@@ -10,6 +10,8 @@ BNet::~BNet() { }
 
 BNet& BNet::operator=(const BNet& bn) {
 	this->type = bn.type;
+	this->cpts = bn.cpts;
+
 	this->e = bn.e;
 	this->n = bn.n;
 
@@ -80,14 +82,14 @@ void BNet::introduceEdge(int k, std::vector<bool> & marked) {
 	}
 }
 
-void BNet::setCPTs(const set<Factor>& _cpts) {
+void BNet::setCPTs(const std::set<Factor>& _cpts) {
 	if (_cpts.size() == this->n)
 		this->cpts = _cpts;
 	else
 		throw exception("设置有误，条件概率表个数应与网络节点个数一致");
 }
 
-set<int> BNet::getAllNbrs(const set<int>& restNode, int u) {
+std::set<int> BNet::getAllNbrs(const std::set<int>& restNode, int u) {
 	set<int> nbrs;
 	for (int v = firstNbr(u); -1 < v; v = nextNbr(u, v)) {
 		if (restNode.find(v) != restNode.end())
@@ -96,7 +98,7 @@ set<int> BNet::getAllNbrs(const set<int>& restNode, int u) {
 	return nbrs;
 }
 
-void BNet::addFillEdge(int i, set<int> & restNode) {
+void BNet::addFillEdge(int i, std::set<int> & restNode) {
 	vector<int> nbrs;
 	for (int j = firstNbr(i); -1 < j; j = nextNbr(i, j)) {
 		if (restNode.find(j) != restNode.end())
@@ -110,10 +112,19 @@ void BNet::addFillEdge(int i, set<int> & restNode) {
 	}
 }
 
-vector<string> BNet::getAllNodesName() {
+std::vector<string> BNet::getAllNodesName() {
 	vector<string> names;
 	for (int i = 0; i < this->n; i++) {
 		names.push_back(this->vertex(i).name);
 	}
 	return names;
+}
+
+std::set<Factor> BNet::getCPTs() const {
+	return this->cpts; 
+}
+
+void BNet::correctNode() {
+	for (int i = 0; i < this->n; i++)
+		this->vertex(i).node = i;
 }
