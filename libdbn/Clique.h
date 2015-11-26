@@ -6,6 +6,8 @@
 #include "InOutUtils.h"
 
 using namespace std;
+struct RandVar;
+class Factor;
 
 struct UndirectEdge {
 	uint32_t i;
@@ -21,7 +23,7 @@ class Clique {
 private:
 	set<RandVar> vars;
 	set<Factor> pots;
-	Factor message;
+	//Factor message;
 
 public:
 	bool isEqual(vector<string>&);

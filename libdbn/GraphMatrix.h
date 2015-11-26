@@ -47,6 +47,8 @@ public:
 	virtual int firstNbr(int i);
 	//顶点i和j之间是否存在边 
 	virtual bool exists(int i, int j);
+	//顶点i的所有邻居(使用过要delete)
+	virtual (set<int>*) nbrs(int i) const;
 
 	//顶点操作
 	virtual Tv& vertex(int i);
@@ -222,4 +224,13 @@ Tv GraphMatrix<Tv, Te>::remove(int i) {
 	Tv vBak = vertex(i);
 	V.erase(V.begin() + i);
 	return vBak;
+}
+
+template <typename Tv, typename Te>
+set<int>* GraphMatrix<Tv, Te>::nbrs(int i) const {
+	set<int> * pNbrs = new set<int>();
+	for (int j = firstNbr(i); 0 <= j; j = nextNbr(i, j)) {
+		pNbrs->insert(j);
+	}
+	return pNbrs;
 }

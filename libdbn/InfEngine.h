@@ -13,6 +13,7 @@
 #include "utils.h"
 #include "InOutUtils.h"
 #include <string>
+#include <map>
 
 class InferStrategy;
 
@@ -82,8 +83,19 @@ public:
 
 	/*================================*/
 	void triangulate(BNet &, vector<int>& pi);
+
+	//set<int> BronKerboschRecursive(set<int> r, set<int> p, set<int> x);
+	void BronKerboschRecursive(map<int, set<int>*> & nnbrs,
+		set<int> & cand,
+		set<int> & done,
+		vector<int> & sofar,
+		vector< vector<int> > & clique);
+
+	vector<Clique>* findCliques(BNet &);
+	vector<Clique>* findCliquesRecursive(BNet &);
 	//端正图构造联合树（from BNT Matlab ver.）
-	JTree graphToJTree(BNet & moral);
+	//make_max_clique_graph
+	JTree graphToJTree(BNet &);
 	/*================================*/
 
 	//Shafer Shenoy Algorithm

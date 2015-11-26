@@ -15,6 +15,10 @@ static PyMethodDef libdbnMethods[] = {
 	{ "foo", wrap_my_c_func, METH_VARARGS },
 	{ "insertstr", insertStr, METH_VARARGS },
 	{ "show", showString, METH_VARARGS },
+	{ "setEvid", setEvid, METH_VARARGS },
+	{ "setQuery", setQuery, METH_VARARGS },
+	{ "jtreeQuery", varElim, METH_VARARGS },
+	{ "varElim", varElim, METH_VARARGS },
 	{NULL, NULL}
 };
 

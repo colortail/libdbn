@@ -100,5 +100,26 @@ VECTOR & removeElements(VECTOR & v, const SET & s) {
 	return v;
 }
 
+template<typename SET>
+SET setIntersection(SET & s1, SET & s2) {
+	typename SET::iterator iter;
+	SET intersection;
+	for (iter = s1.begin(); iter != s1.end(); iter++) {
+		if (s2.find(*iter) != s2.end())
+			intersection.insert(*iter);
+	}
+	return intersection;
+}
+
+template<typename SET>
+SET setSub(SET & s1, SET & s2) {
+	typename SET::iterator iter;
+	SET sub;
+	for (iter = s1.begin(); iter != s1.end(); iter++) {
+		if (s2.find(*iter) == s2.end())
+			sub.insert(*iter);
+	}
+	return sub;
+}
 
 }

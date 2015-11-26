@@ -1,0 +1,32 @@
+{
+	"type": "bn",
+	"variable_size": 8,
+	"name": "asian_net",
+	"data": [
+		{
+			"name": "A",
+			"pa": null,
+			"cpt" : [0.2]
+		},
+		{
+			"name": "B",
+			"pa": null,
+			"cpt" : [0.4,0.6]
+		},
+		{
+			"name": "C",
+			"pa": ["A"],
+			"cpt" : [0.2,0.1,0.5,0.2]
+		},
+		{
+			"name": "E",
+			"pa": ["C"],
+			"cpt" : [0.4,0.6]
+		},
+		{
+			"name": "D",
+			"pa": ["A","B"],
+			"cpt" : [0.2]
+		}
+	]
+}

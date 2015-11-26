@@ -22,12 +22,12 @@ Factor JTreeInference::operator()(BNet & bnet,
 	bnet.moralize();
 	
 	vector<int> pi = infEngine->maxCardinalitySearch(bnet);
-	//vector<int> pi = infEngine->greedyOrdering(bnet);
+	//vector<int> pi = infEngine->greedyOrdering(bnet, MinFill());
 	
 	JTree jtree;
 
 	jtree = infEngine->buildJTree(jtree, bnet, pi);
-
+	InOutUtils::stdPrintJTree(jtree);
 	return infEngine->messagePropagation(bnet, jtree, queryset, evidset, pi);
 	
 	//unfinished hugin protocal

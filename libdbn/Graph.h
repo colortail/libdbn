@@ -5,6 +5,7 @@
 #include <vector>
 #include <stack>
 #include <queue>
+#include <set>
 
 typedef enum { UNDISCOVERED, DISCOVERED, VISITED } VStatus;
 typedef enum { UNDETERMINED, TREE, CROSS, FORWARD, BACKWARD } EType;

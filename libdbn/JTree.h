@@ -34,7 +34,7 @@ public:
 
 	//寻找包含varset中所有编号(变量下标)的团
 	vector<int> findClique(set<int> & varset);
-	//找到覆盖变量集的团集
+	//找到覆盖变量集的团集(不要改成引用)
 	vector<int> findCoverClique(vector<string>);
 	
 	void setProb(const Factor & factor);

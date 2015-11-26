@@ -8,6 +8,8 @@ struct UndirectEdge;
 
 class Clique;
 class JTree;
+class BNet;
+class Factor;
 
 class InOutUtils {
 public:

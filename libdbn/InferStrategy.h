@@ -2,6 +2,8 @@
 #include "BNet.h"
 #include "InfEngine.h"
 
+#include "InOutUtils.h"
+
 //ÍÆÀí²ßÂÔ
 class InferStrategy {
 public:

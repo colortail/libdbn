@@ -259,17 +259,6 @@ JTree& InfEngine::buildJTree(JTree & jtree, BNet & induced, vector<int> & pi, se
 	return jtree;
 }
 
-/*
-  inspired by BNT(from Prof. K.Murphy)
-
-  Find an optimal elimination ordering (NP-hard problem!)
-  triangulate
-  Connect the cliques up into a jtree,
-*/
-JTree InfEngine::graphToJTree(BNet & moral) {
-	return JTree();
-}
-
 void InfEngine::initJTreeCPD(JTree & jtree, const BNet & bnet) {
 	set<Factor> factorset = bnet.getCPTs();
 	for (set<Factor>::iterator setIt = factorset.begin();
@@ -281,6 +270,7 @@ void InfEngine::initJTreeCPD(JTree & jtree, const BNet & bnet) {
 
 void InfEngine::setEvidence(JTree & jtree, unordered_map<string, double> & evidset) {
 	for (uint32_t i = 0; i < jtree.getVertexSize(); i++) {
+		
 		setEvidence(jtree.vertex(i).getPots(), evidset);
 	}
 }
@@ -321,4 +311,187 @@ Factor InfEngine::messagePassing(BNet & bnet,
 	vector<string> & queryset,
 	unordered_map<string, double>& evidset) { 
 	return Factor();
+}
+
+
+void InfEngine::triangulate(BNet & moral, vector<int>& pi) {
+	if (moral.getStructType() != MORAL)
+		moral.moralize();
+
+	set<int> restNode;
+	for (int i = 0; i < moral.vertexSize(); i++) {
+		restNode.insert(i);
+	}
+	for (int i = 0; i < pi.size(); i++) {
+		set<int> nbrs = moral.getAllNbrs(restNode, pi[i]);
+		for (set<int>::iterator iIt = nbrs.begin(); iIt != nbrs.end(); iIt++) {
+			for (set<int>::iterator jIt = nbrs.begin(); jIt != nbrs.end(); jIt++) {
+				if (!moral.exists(*iIt, *jIt)) {
+					moral.insert(0, 0, *iIt, *jIt);
+				}
+			}
+		}
+		restNode.erase(pi[i]);
+	}
+	
+}
+
+
+vector<Clique>* InfEngine::findCliques(BNet & triGraph) {
+	vector<Clique> * p;
+	return p;
+}
+
+void InfEngine::BronKerboschRecursive(map<int, set<int>*> & nnbrs,
+	set<int> & cand,
+	set<int> & done,
+	vector<int> & sofar,
+	vector< vector<int> > & clique) {
+
+	//find pivot mode
+	int maxconn = -1;
+	int numb_cand = cand.size();
+	set<int> pivotnbrs;
+
+	for (set<int>::iterator nIt = done.begin();
+		nIt != done.end();
+		nIt++) {
+		map<int, set<int>*>::iterator nbrIt = nnbrs.find(*nIt);
+		if (nbrIt == nnbrs.end())
+			continue;
+
+		set<int> cn = setIntersection(cand, *(nbrIt->second));
+		int conn = cn.size();
+		if (conn > maxconn) {
+			pivotnbrs = cn;
+			maxconn = conn;
+			if (conn == numb_cand) {
+				// all possible cliques already found
+				return;
+			}
+		}
+	}
+
+	for (set<int>::iterator nIt = cand.begin();
+		nIt != cand.end();
+		nIt++) {
+
+		map<int, set<int>*>::iterator nbrIt = nnbrs.find(*nIt);
+		if (nbrIt == nnbrs.end())
+			continue;
+
+		set<int> cn = setIntersection(cand, *(nbrIt->second));
+		int conn = cn.size();
+		if (conn > maxconn) {
+			pivotnbrs = cn;
+			maxconn = conn;
+		}
+	}
+
+	set<int> smallcand = setSub(cand, pivotnbrs);
+
+	for (set<int>::iterator nIt = smallcand.begin();
+		nIt != smallcand.end();
+		nIt++) {
+		cand.erase(*nIt);
+		sofar.push_back(*nIt);
+
+		map<int, set<int>*>::iterator nbrIt = nnbrs.find(*nIt);
+		if (nbrIt == nnbrs.end())
+			continue;
+
+		set<int> newCand = setIntersection(cand, *(nbrIt->second));
+		set<int> newDone = setIntersection(done, *(nbrIt->second));
+
+		if (newCand.size() == 0 && newDone.size() == 0) {
+			//find the clique
+			clique.push_back(sofar);
+		}
+		else if (newDone.size() == 0 && newCand.size() == 1) {
+			vector<int> concatsofar(sofar);
+			for (set<int>::iterator it = newCand.begin();
+				it != newCand.end();
+				it++) {
+
+				concatsofar.push_back(*it);
+			}
+			clique.push_back(sofar);
+		}
+		else {
+			BronKerboschRecursive(nnbrs,
+				cand,
+				done,
+				sofar,
+				clique);
+		}
+		done.insert(sofar.back());
+		sofar.pop_back();
+	}
+
+}
+
+vector<Clique>* InfEngine::findCliquesRecursive(BNet & triGraph) {
+
+	vector< vector<int> > cliques;
+	vector<Clique>* result = new vector<Clique>();
+
+	vector<int> sofar;
+	map<int, set<int>*> nnbrs;
+	set<int> cand;
+	set<int> done;
+
+	for (uint32_t i = 0; i < triGraph.vertexSize(); i++) {
+		set<int> * nbr = triGraph.nbrs(i);
+		nnbrs.insert({ i, nbr });
+	}
+	if (nnbrs.size() == 0)
+		return result;
+
+	for (uint32_t i = 0; i < triGraph.vertexSize(); i++) {
+		cand.insert(i);
+	}
+
+	BronKerboschRecursive(nnbrs, cand, done, sofar, cliques);
+
+	//construct Clique
+	for (vector< vector<int> >::iterator it = cliques.begin();
+		it != cliques.end();
+		it++) {
+		Clique c;
+		for (vector<int>::iterator eIt = it->begin();
+			eIt != it->end();
+			eIt++) {
+
+			c.insert(triGraph.vertex(*eIt));
+		}
+		result->push_back(c);
+	}
+
+	//free step
+	for (map<int, set<int>*>::iterator it = nnbrs.begin();
+		it != nnbrs.end();
+		it++) {
+		if (it->second != NULL) {
+			delete it->second;
+			it->second = NULL;
+		}
+	}
+	return result;
+}
+/*
+inspired by BNT(from Prof. K.Murphy)
+
+Find an optimal elimination ordering (NP-hard problem!)
+triangulate
+Connect the cliques up into a jtree,
+*/
+JTree InfEngine::graphToJTree(BNet & triGraph) {
+
+	vector<Clique>* cliqs = findCliquesRecursive(triGraph);
+	JTree jtree;
+
+	for (int i = 0; i < cliqs->size(); i++) {
+		cliqs[i];
+	}
+	return jtree;
 }
