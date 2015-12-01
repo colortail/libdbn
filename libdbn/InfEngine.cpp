@@ -222,7 +222,7 @@ JTree& InfEngine::buildJTree(JTree & jtree, BNet & induced, vector<int> & pi, se
 			clique.insert(induced.vertex(*nbrIt));
 	}
 	
-	int c = jtree.insert(clique);
+	int c = jtree.insertClique(clique);
 	c--;
 
 	if (clique.isEqual(restNode)) {
@@ -251,8 +251,12 @@ JTree& InfEngine::buildJTree(JTree & jtree, BNet & induced, vector<int> & pi, se
 				separator.push_back(induced.vertex(*w).name);
 				separatorSize.push_back(induced.vertex(*w).range ? induced.vertex(*w).range : 2);
 			}
-			jtree.insert(Factor(separator, separatorSize), 0, c, cp[i]);
-			jtree.insert(Factor(separator, separatorSize), 0, cp[i], c);
+
+			Factor sepFactor(separator, separatorSize);
+			sepFactor.setProb(vector<double>(sepFactor.getRowsSize(), 1));
+
+			jtree.insert(sepFactor, 0, c, cp[i]);
+			jtree.insert(sepFactor, 0, cp[i], c);
 			break;
 		}
 	}
@@ -261,6 +265,7 @@ JTree& InfEngine::buildJTree(JTree & jtree, BNet & induced, vector<int> & pi, se
 
 void InfEngine::initJTreeCPD(JTree & jtree, const BNet & bnet) {
 	set<Factor> factorset = bnet.getCPTs();
+	jtree.clearTabular();
 	for (set<Factor>::iterator setIt = factorset.begin();
 		setIt != factorset.end();
 		setIt++) {
@@ -268,23 +273,45 @@ void InfEngine::initJTreeCPD(JTree & jtree, const BNet & bnet) {
 	}
 }
 
-void InfEngine::setEvidence(JTree & jtree, unordered_map<string, double> & evidset) {
+void InfEngine::setEvidence(JTree & jtree,const BNet & bnet, unordered_map<string, double> & evidset) {
+
+	//this->consistence == false, 为了判断是否**确实**没有更新证据
+	if (!this->consistence && evidCache.size() == evidset.size()) {
+		for (unordered_map<string, double>::iterator it = evidCache.begin();
+			it != evidCache.end();
+			it++) {
+
+			unordered_map<string, double>::iterator target = evidset.find(it->first);
+			if (target == evidset.end() || target->second != it->second) {
+				//表示实际更新了证据，修正consistence
+				evidCache = evidset;
+				this->consistence = true;
+				break;
+			}
+		}
+		
+		if (!this->consistence)
+			return;
+	}
+
+	this->initJTreeCPD(jtree, bnet);
+
 	for (uint32_t i = 0; i < jtree.getVertexSize(); i++) {
 		
-		setEvidence(jtree.vertex(i).getPots(), evidset);
+		this->setEvidence(jtree.vertex(i).getPots(), evidset);
 	}
+
+	
 }
 
 //Shafer Shenoy Algorithm
-Factor InfEngine::messagePropagation(BNet & bnet,
+void InfEngine::messagePropagation(BNet & bnet,
 	JTree & jtree,
 	vector<string> & queryset, 
-	unordered_map<string, double>& evidset,
-	vector<int> & pi) {
+	unordered_map<string, double>& evidset) {
 	
-	this->initJTreeCPD(jtree, bnet);
 	int root = jtree.getRoot(queryset);
-	
+
 	//collection phase
 	for (int nbr = jtree.firstNbr(root); -1 < nbr; nbr = jtree.nextNbr(root, nbr)) {
 		jtree.collectMessage(root, nbr);
@@ -295,15 +322,52 @@ Factor InfEngine::messagePropagation(BNet & bnet,
 		jtree.distributeMessage(root, nbr);
 	}
 
+	this->consistence = false;
+	
+}
+
+
+Factor InfEngine::getTabularFromJTree(BNet & bnet,
+	JTree & jtree,
+	vector<string> & queryset,
+	unordered_map<string, double>& evidset) {
+
+	vector<string> tmpQueryset = queryset;
 	//posterior computaion
 	Factor posterior;
+
+	/* 
+	//发现该算法有误的问题所在
+	//是因为分隔集中的概率才达到了一致
+
 	vector<int> cqs = jtree.findCoverClique(queryset);
-	//覆盖证据的所有团
+	//覆盖查询变量的所有团
 	for (uint32_t i = 0; i < cqs.size(); i++) {
 		posterior = posterior.multiply(jtree.getCliquePotential(cqs[i]));
 	}
 	vector<string> querySup = libdbn::get2VectorSubstract(*posterior.getElementsName(), queryset);
 	return posterior.summation(querySup).normalize();
+	*/
+	vector<pair<int, int> > seps = jtree.findCoverSeparator(tmpQueryset);
+	for (int i = 0; i < seps.size(); i++) {
+		posterior = posterior.multiply(jtree.edge((seps[i]).first, (seps[i]).second));
+	}
+	//tmpQueryset为空表分隔集可以完整覆盖查询变量，否则无法覆盖
+	if (!tmpQueryset.empty()) {
+
+		vector<int> cqs = jtree.findCoverClique(tmpQueryset);
+		//覆盖查询变量的所有团
+		for (uint32_t i = 0; i < cqs.size(); i++) {
+			Factor pots = jtree.getCliquePotential(cqs[i]);
+			vector<string> singleCliqueSup = libdbn::get2VectorSubstract(*pots.getElementsName(), tmpQueryset);
+			
+			posterior = posterior.multiply(pots.summation(singleCliqueSup));
+		}
+
+	}
+	//vector<string> querySup = libdbn::get2VectorSubstract(*posterior.getElementsName(), queryset);
+	//return posterior.summation(querySup).normalize();
+	return posterior.normalize();
 }
 
 //Hugin Algorithm
@@ -314,35 +378,38 @@ Factor InfEngine::messagePassing(BNet & bnet,
 }
 
 
-void InfEngine::triangulate(BNet & moral, vector<int>& pi) {
+BNet InfEngine::triangulate(const BNet & bnet, vector<int>& pi) {
+	BNet moral;
+	moral = bnet;
+
 	if (moral.getStructType() != MORAL)
 		moral.moralize();
 
 	set<int> restNode;
-	for (int i = 0; i < moral.vertexSize(); i++) {
+	for (uint32_t i = 0; i < moral.vertexSize(); i++) {
 		restNode.insert(i);
 	}
-	for (int i = 0; i < pi.size(); i++) {
+	for (uint32_t i = 0; i < pi.size(); i++) {
 		set<int> nbrs = moral.getAllNbrs(restNode, pi[i]);
 		for (set<int>::iterator iIt = nbrs.begin(); iIt != nbrs.end(); iIt++) {
 			for (set<int>::iterator jIt = nbrs.begin(); jIt != nbrs.end(); jIt++) {
-				if (!moral.exists(*iIt, *jIt)) {
+				if (*iIt != *jIt && !moral.exists(*iIt, *jIt)) {
 					moral.insert(0, 0, *iIt, *jIt);
 				}
 			}
 		}
 		restNode.erase(pi[i]);
 	}
-	
+	return moral;
 }
 
 
 vector<Clique>* InfEngine::findCliques(BNet & triGraph) {
-	vector<Clique> * p;
+	vector<Clique> * p = new vector<Clique>();
 	return p;
 }
 
-void InfEngine::BronKerboschRecursive(map<int, set<int>*> & nnbrs,
+void InfEngine::BronKerboschRecursive(map<int, set<int> > & nnbrs,
 	set<int> & cand,
 	set<int> & done,
 	vector<int> & sofar,
@@ -356,11 +423,11 @@ void InfEngine::BronKerboschRecursive(map<int, set<int>*> & nnbrs,
 	for (set<int>::iterator nIt = done.begin();
 		nIt != done.end();
 		nIt++) {
-		map<int, set<int>*>::iterator nbrIt = nnbrs.find(*nIt);
+		map<int, set<int>>::iterator nbrIt = nnbrs.find(*nIt);
 		if (nbrIt == nnbrs.end())
 			continue;
 
-		set<int> cn = setIntersection(cand, *(nbrIt->second));
+		set<int> cn = setIntersection(cand, nbrIt->second);
 		int conn = cn.size();
 		if (conn > maxconn) {
 			pivotnbrs = cn;
@@ -376,11 +443,11 @@ void InfEngine::BronKerboschRecursive(map<int, set<int>*> & nnbrs,
 		nIt != cand.end();
 		nIt++) {
 
-		map<int, set<int>*>::iterator nbrIt = nnbrs.find(*nIt);
+		map<int, set<int> >::iterator nbrIt = nnbrs.find(*nIt);
 		if (nbrIt == nnbrs.end())
 			continue;
 
-		set<int> cn = setIntersection(cand, *(nbrIt->second));
+		set<int> cn = setIntersection(cand, nbrIt->second);
 		int conn = cn.size();
 		if (conn > maxconn) {
 			pivotnbrs = cn;
@@ -396,12 +463,12 @@ void InfEngine::BronKerboschRecursive(map<int, set<int>*> & nnbrs,
 		cand.erase(*nIt);
 		sofar.push_back(*nIt);
 
-		map<int, set<int>*>::iterator nbrIt = nnbrs.find(*nIt);
+		map<int, set<int> >::iterator nbrIt = nnbrs.find(*nIt);
 		if (nbrIt == nnbrs.end())
 			continue;
 
-		set<int> newCand = setIntersection(cand, *(nbrIt->second));
-		set<int> newDone = setIntersection(done, *(nbrIt->second));
+		set<int> newCand = setIntersection(cand, nbrIt->second);
+		set<int> newDone = setIntersection(done, nbrIt->second);
 
 		if (newCand.size() == 0 && newDone.size() == 0) {
 			//find the clique
@@ -415,12 +482,12 @@ void InfEngine::BronKerboschRecursive(map<int, set<int>*> & nnbrs,
 
 				concatsofar.push_back(*it);
 			}
-			clique.push_back(sofar);
+			clique.push_back(concatsofar);
 		}
 		else {
 			BronKerboschRecursive(nnbrs,
-				cand,
-				done,
+				newCand,
+				newDone,
 				sofar,
 				clique);
 		}
@@ -436,14 +503,12 @@ vector<Clique>* InfEngine::findCliquesRecursive(BNet & triGraph) {
 	vector<Clique>* result = new vector<Clique>();
 
 	vector<int> sofar;
-	map<int, set<int>*> nnbrs;
+	map<int, set<int>> nnbrs;
 	set<int> cand;
 	set<int> done;
 
-	for (uint32_t i = 0; i < triGraph.vertexSize(); i++) {
-		set<int> * nbr = triGraph.nbrs(i);
-		nnbrs.insert({ i, nbr });
-	}
+	triGraph.setnNbrs(nnbrs);
+
 	if (nnbrs.size() == 0)
 		return result;
 
@@ -466,16 +531,7 @@ vector<Clique>* InfEngine::findCliquesRecursive(BNet & triGraph) {
 		}
 		result->push_back(c);
 	}
-
-	//free step
-	for (map<int, set<int>*>::iterator it = nnbrs.begin();
-		it != nnbrs.end();
-		it++) {
-		if (it->second != NULL) {
-			delete it->second;
-			it->second = NULL;
-		}
-	}
+	
 	return result;
 }
 /*
@@ -485,13 +541,66 @@ Find an optimal elimination ordering (NP-hard problem!)
 triangulate
 Connect the cliques up into a jtree,
 */
-JTree InfEngine::graphToJTree(BNet & triGraph) {
+void InfEngine::graphToJTree(JTree & jtree, BNet & triGraph) {
 
 	vector<Clique>* cliqs = findCliquesRecursive(triGraph);
-	JTree jtree;
 
-	for (int i = 0; i < cliqs->size(); i++) {
-		cliqs[i];
+	set<int> U;
+	set<int> V;
+
+	int max = -1;
+	pair<int, int> edge;
+	int cnt = 0;
+
+	for (uint32_t i = 0; i < cliqs->size(); i++) {
+		jtree.insertClique(cliqs->at(i));
+		U.insert(i);
 	}
-	return jtree;
+
+	if (U.size() != 0) {
+		V.insert(*(U.begin()));
+		U.erase(U.begin());
+	}
+
+	while (U.size()) {
+		max = -1;
+		for (set<int>::iterator uIt = U.begin();
+			uIt != U.end();
+			uIt++) {
+			for (set<int>::iterator vIt = V.begin();
+				vIt != V.end();
+				vIt++) {
+
+				cnt = Clique::joinElement(cliqs->at(*uIt), cliqs->at(*vIt)).size();
+				if (cnt > max) {
+					max = cnt;
+					edge.first = *uIt;
+					edge.second = *vIt;
+				}
+			}
+		}
+
+		V.insert(edge.first);
+		U.erase(edge.first);
+
+		set<RandVar> randvarset = Clique::joinElement(cliqs->at(edge.first), cliqs->at(edge.second));
+		vector<RandVar> randvars;
+		for (set<RandVar>::iterator randIt = randvarset.begin();
+			randIt != randvarset.end();
+			randIt++) {
+
+			randvars.push_back(*randIt);
+		}
+		Factor separator(randvars);
+
+		separator.setProb(vector<double>(separator.getRowsSize(), 1));
+
+		jtree.insert(separator, cnt, edge.first, edge.second);
+		jtree.insert(separator, cnt, edge.second, edge.first);
+	}
+
+	delete cliqs;
+
 }
+
+unordered_map<string, double> InfEngine::evidCache;

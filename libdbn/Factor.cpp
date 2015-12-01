@@ -3,11 +3,26 @@
 //Factor::Factor() : varSize(0), factorType(CPD){}
 
 Factor::~Factor() {
-	if (pName != NULL) delete pName;
-	if (pLocation != NULL) delete pLocation;
-	if (pTable != NULL) delete pTable;
-	if (pParents != NULL) delete pParents;
-	if (pElemSize != NULL) delete pElemSize;
+	if (pName != NULL) {
+		delete pName;
+		pName = NULL;
+	}
+	if (pLocation != NULL) {
+		delete pLocation;
+		pLocation = NULL;
+	}
+	if (pTable != NULL) {
+		delete pTable;
+		pTable = NULL;
+	}
+	if (pParents != NULL) {
+		delete pParents;
+		pParents = NULL;
+	}
+	if (pElemSize != NULL) {
+		delete pElemSize;
+		pElemSize = NULL;
+	}
 }
 
 Factor::Factor(const Factor& copy)
@@ -30,11 +45,26 @@ Factor::Factor(const Factor& copy)
 Factor& Factor::operator=(const Factor& assign) {
 
 	if (this != &assign) {
-		if (this->pName != NULL) delete this->pName;
-		if (this->pLocation != NULL) delete this->pLocation;
-		if (this->pTable != NULL) delete this->pTable;
-		if (this->pParents != NULL) delete this->pParents;
-		if (this->pElemSize != NULL) delete this->pElemSize;
+		if (pName != NULL) {
+			delete pName;
+			pName = NULL;
+		}
+		if (pLocation != NULL) {
+			delete pLocation;
+			pLocation = NULL;
+		}
+		if (pTable != NULL) {
+			delete pTable;
+			pTable = NULL;
+		}
+		if (pParents != NULL) {
+			delete pParents;
+			pParents = NULL;
+		}
+		if (pElemSize != NULL) {
+			delete pElemSize;
+			pElemSize = NULL;
+		}
 
 		this->factorType = assign.factorType;
 		this->varSize = assign.varSize;
@@ -113,10 +143,10 @@ void Factor::newFactor(const vector<string> & elems, const vector<size_t> & elem
 		}
 		offset *= elemSize[i];
 	}
-
+	hashCode();
 }
 
-void Factor::setParents(const vector<string> & parents) {
+Factor& Factor::setParents(const vector<string> & parents) {
 	this->factorType = CPD;
 	pParents = new vector<bool>(varSize, false);
 	assert(pLocation != NULL);
@@ -127,6 +157,7 @@ void Factor::setParents(const vector<string> & parents) {
 			(*pParents)[loc->second] = true;
 		}
 	}
+	return *this;
 }
 
 uint32_t Factor::indexOf(string & name) const {
@@ -159,11 +190,12 @@ vector<size_t> Factor::getElemSize(vector<string> & names) {
 	return sizes;
 }
 
-void Factor::setProb(const vector<double> & probVector) {
+Factor& Factor::setProb(const vector<double> & probVector) {
 	int size = probVector.size();
 	for (uint32_t i = 0; i < this->pTable->size(); i++) {
 		(*this->pTable)[i][this->varSize] = probVector[i % size];
 	}
+	return *this;
 }
 
 unordered_map<string, pair<int, int>> Factor::getIntersection(const Factor* a, const Factor* b) {
@@ -385,14 +417,14 @@ uint32_t Factor::hashCode() {
 }
 
 //set operator:参数为对象，不可为reference
-bool operator<(Factor lhs, Factor rhs) {
+bool operator<(const Factor & lhs, const Factor & rhs) {
 
 	vector<string>* leftNames = lhs.getElementsName();
 	vector<string>* rightNames = rhs.getElementsName();
 	if (lhs.getVarSize() != rhs.getVarSize())
 		return lhs.getVarSize() < rhs.getVarSize();
 	
-	return lhs.hashCode() < rhs.hashCode();
+	return lhs.hash < rhs.hash;
 
 }
 

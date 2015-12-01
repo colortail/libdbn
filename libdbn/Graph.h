@@ -211,4 +211,3 @@ std::stack<Tv>* Graph<Tv, Te>::tSort(int s) {
 	} while (s != (v = (++v % n)));
 	return S; //若输入为DAG，则S内各顶点自顶向底排序；否则（不存在拓扑排序），S空
 }
-

@@ -202,7 +202,8 @@ void bnetTest() {
 	
 	//build jtree algorithm 1
 	JTree jtree;
-	pInf->buildJTree(jtree, asian_net, pi);
+	//pInf->buildJTree(jtree, asian_net, pi);
+	pInf->graphToJTree(jtree, pInf->triangulate(asian_net, pi));
 	InOutUtils::stdPrintJTree(jtree);
 }
 
@@ -229,16 +230,31 @@ void inferenceTest(vector<string> &q, unordered_map<string, double> & e) {
 	// VE
 	//Factor result = pInf->inference(bn, q, e, VariableElimination());
 	//Junction Tree
-	//bn.moralize();
-	vector<int> pi = pInf->greedyOrdering(simpleBn, MinFill());
+	//simpleBn.moralize();
+	//vector<int> pi = pInf->greedyOrdering(simpleBn, MinFill());
 	
 	//JTree jtree;
 	//pInf->buildJTree(jtree, bn, pi);
 	//InOutUtils::stdPrintJTree(jtree, 1);
 
-	Factor result = pInf->inference(simpleBn, q, e, JTreeInference());
+	//BNet bn = simpleBn;
 
-	InOutUtils::stdPrint(result);
+	Factor result1 = pInf->inference(simpleBn, q, e, JTreeInference());
+	InOutUtils::stdPrint(result1);
+	
+	Factor result2 = pInf->inference(simpleBn, vector<string>(1, string("B")), e, JTreeInference());
+	InOutUtils::stdPrint(result2);
+	Factor result3 = pInf->inference(simpleBn, vector<string>(1, string("C")), e, JTreeInference());
+	InOutUtils::stdPrint(result3);
+	Factor result4 = pInf->inference(simpleBn, vector<string>(1, string("D")), e, JTreeInference());
+	InOutUtils::stdPrint(result4);
+	Factor result5 = pInf->inference(simpleBn, vector<string>(1, string("E")), e, JTreeInference());
+	InOutUtils::stdPrint(result5);
+	
+	//Factor result6 = pInf->inference(simpleBn, vector<string>(1, string("A")), e, VariableElimination());
+
+	//InOutUtils::stdPrint(result6);
+	/*
 	pInf->triangulate(simpleBn, pi);
 	vector<Clique>* cliqs = pInf->findCliquesRecursive(simpleBn);
 	for (int i = 0; i < cliqs->size(); i++) {
@@ -246,6 +262,9 @@ void inferenceTest(vector<string> &q, unordered_map<string, double> & e) {
 		InOutUtils::stdPrintClique(cliqs->at(i));
 	}
 	delete cliqs;
+	JTree jtree = pInf->graphToJTree(simpleBn);
+	InOutUtils::stdPrintJTree(jtree);
+	*/
 	//pInf->eliminate(sfs,vector<string>(1,"B"));
 	//for (auto it = sfs.begin(); it != sfs.end(); it++) {
 	//	InOutUtils::stdPrint(*it);
@@ -256,13 +275,15 @@ void inferenceTest(vector<string> &q, unordered_map<string, double> & e) {
 }
 
 int main() {
+	BenchMark::startDebug();
 	BenchMark bm;
 	//graphmatrixTest();
 	//factorTest();
 	
 	//bnetTest();
-	setEvidence(string("D"), 1);
+	setEvidence(string("C"), 1);
 	inferenceTest(vector<string>(1, string("A")), evidset);
+	
 	
 	bm.timeTest();
 	return 0;

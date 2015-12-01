@@ -2,23 +2,48 @@
 #include <stdint.h>
 #include <string>
 #include <ctime>
+#include <map>
 #include <vector>
 
 namespace libdbn {
 	
 uint32_t hashCode(std::string & str);
 
+std::vector<double> range(double end, double start = 0, double step = 1);
+
+std::vector<int> range(int end, int start = 0, int step = 1);
+
+/**特定概率分布的随机数**/
+
+//均匀分布
+double uniformDist(int start = 0, int end = 1);
+
+//正太分布
+double gaussianDist(double mu = 0, double sigma = 1);
+
+/**特定的概率分布**/
+
+
 class BenchMark {
 private:
 	std::string benchMark;
 	clock_t start;
 	clock_t end;
+	static bool debug;
+
+	static std::map<std::string, int> msgCnts;
+
 public:
-	BenchMark() : benchMark("") { start = clock(); }
+	BenchMark() : benchMark(""){ start = clock(); }
 	BenchMark(std::string & name) : benchMark(name) { start = clock(); }
 
+	static inline void startDebug() { debug = true; }
+	static inline void stopDebug() { debug = false; }
 	inline void clear() { start = clock(); }
+	
 	void timeTest();
+
+	static void debugStdOut(std::string & msg, bool mem = true, const char * extra = "");
 };
 
 template< typename T, typename VECTOR >

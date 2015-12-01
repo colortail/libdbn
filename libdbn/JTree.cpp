@@ -10,6 +10,47 @@ JTree::~JTree()
 {
 }
 
+JTree::JTree(const JTree & copy) {
+	this->E = copy.E;
+	this->e = copy.e;
+	this->location = copy.location;
+	this->n = copy.n;
+	this->root = copy.root;
+	this->V = copy.V;
+
+	for (vector< vector< Edge < Factor > * > >::iterator rowIt = this->E.begin();
+		rowIt != E.end();
+		rowIt++) {
+		for (vector< Edge < Factor > * >::iterator colIt = rowIt->begin();
+			colIt != rowIt->end();
+			colIt++) {
+			if (*colIt != NULL)
+				*colIt = new Edge<Factor>((*colIt)->data, 0);
+		}
+	}
+}
+
+JTree& JTree::operator=(const JTree & copy) {
+	this->E = copy.E;
+	this->e = copy.e;
+	this->location = copy.location;
+	this->n = copy.n;
+	this->root = copy.root;
+	this->V = copy.V;
+
+	for (vector< vector< Edge < Factor > * > >::iterator rowIt = this->E.begin();
+		rowIt != E.end();
+		rowIt++) {
+		for (vector< Edge < Factor > * >::iterator colIt = rowIt->begin();
+			colIt != rowIt->end();
+			colIt++) {
+			if (*colIt != NULL)
+				*colIt = new Edge<Factor>((*colIt)->data, 0);
+		}
+	}
+	return *this;
+}
+
 vector<int> JTree::findClique(set<int> & varset) {
 	vector<int> cliques;
 	for (int i = 0; i < this->n; i++) {
@@ -66,6 +107,7 @@ vector<int> JTree::findCoverClique(vector<string> varset) {
 void JTree::setProb(const Factor & factor) {
 	vector<string>* pName = const_cast<vector<string>*>(factor.getElementsName());
 	set<int> varset;
+	
 	if (pName != NULL) {
 		for (uint32_t k = 0; k < pName->size(); k++) {
 			varset.insert(this->indexOf((*pName)[k]));
@@ -74,6 +116,7 @@ void JTree::setProb(const Factor & factor) {
 		
 		//任取其一（这里取最后一个）
 		if (belongeds.size() > 0) {
+			
 			this->vertex(belongeds[belongeds.size() - 1]).insert(factor);
 		}
 	}
@@ -120,10 +163,19 @@ void JTree::collectMessage(int u, int v) {
 		}
 	}
 	sendMessage(v, u);
+
+	char msg[5];
+	sprintf_s(msg, "%d->%d", v, u);
+	BenchMark::debugStdOut(string("collect"), true, msg);
 }
 
 void JTree::distributeMessage(int u, int v) {
 	sendMessage(u, v);
+
+	char msg[5];
+	sprintf_s(msg, "%d->%d", u, v);
+	BenchMark::debugStdOut(string("distribute"), true, msg);
+
 	for (int nbr = firstNbr(v); -1 < nbr; nbr = nextNbr(v, nbr)) {
 		//叶子节点会退出，因为只有一个邻居
 		if (nbr != u) {
@@ -136,20 +188,21 @@ void JTree::sendMessage(int u, int v) {
 
 	if (!exists(u, v))
 		return;
-	Factor & separator = this->edge(u, v);
+	Factor separator = this->edge(u, v);
 	vector<string> sepNames = *separator.getElementsName();
 	
-	Factor result = this->vertex(u).getCliqueInitPotential();
+	separator = separator.multiply(this->vertex(u).getCliqueInitPotential());
+
 	for (int nbr = firstNbr(u); -1 < nbr; nbr = nextNbr(u, nbr)) {
 		if (nbr != v) {
-			result = result.multiply(retrieveMessage(u, nbr));
+			separator = separator.multiply(retrieveMessage(u, nbr));
 		}
 	}
 	
-	vector<string> completeSet = *result.getElementsName();
+	vector<string> completeSet = *separator.getElementsName();
 	vector<string> supSet = libdbn::get2VectorSubstract(completeSet, sepNames);
-	result = result.summation(supSet);
-	saveMessage(u, v, result);
+	separator = separator.summation(supSet);
+	saveMessage(u, v, separator);
 }
 
 Factor JTree::retrieveMessage(int v, int u) {
@@ -185,7 +238,7 @@ void JTree::saveMessage(int u, int v, const Factor& pot) {
 }
 
 
-int JTree::insert(Clique const &vertex) {
+int JTree::insertClique(Clique const &vertex) {
 
 	Clique & c = const_cast<Clique&>(vertex);
 
@@ -210,4 +263,47 @@ int JTree::indexOf(string & name) {
 		return it->second;
 	}
 	return -1;
+}
+
+void JTree::clearTabular() {
+	for (int i = 0; i < n; i++) {
+		this->vertex(i).clearTabular();
+	}
+}
+
+vector<pair<int, int> > JTree::findCoverSeparator(vector<string> & query) {
+	
+	bool cover = false;
+	vector<pair<int, int> > coveredSep;
+
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			if (exists(i, j)) {
+				vector<string>* names = this->edge(i, j).getElementsName();
+				cover = false;
+				for (vector<string>::iterator pN = names->begin();
+					pN != names->end();
+					pN++) {
+					
+					for (vector<string>::iterator qIt = query.begin();
+						qIt != query.end(); ) {
+
+						if (*qIt == *pN) {
+							cover = true;
+							qIt = query.erase(qIt);
+						}
+						else
+							qIt++;
+					}
+				}
+				if (cover) {
+					coveredSep.push_back(pair<int, int>(i, j));
+
+					if (query.empty())
+						return coveredSep;
+				}
+			}
+		}
+	}
+	return coveredSep;
 }

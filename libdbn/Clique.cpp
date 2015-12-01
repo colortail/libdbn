@@ -105,7 +105,7 @@ set<Factor>& Clique::getPots() {
 
 set<string> Clique::containElements(const vector<string> & varset) {
 	set<string> elems;
-	for (int i = 0; i < varset.size(); i++) {
+	for (uint32_t i = 0; i < varset.size(); i++) {
 		for (set<RandVar>::iterator jIt = this->vars.begin();
 			jIt != this->vars.end();
 			jIt++) {
@@ -126,4 +126,18 @@ Factor Clique::getCliqueInitPotential() {
 		factor = factor.multiply(*it);
 	}
 	return factor;
+}
+
+set<RandVar> Clique::joinElement(const Clique & c1, const Clique & c2) {
+	set<RandVar> setvar1 = c1.vars;
+	set<RandVar> setvar2 = c2.vars;
+	return setIntersection(setvar1, setvar2);
+}
+
+void Clique::removeTabular(const Factor & factor) {
+	this->pots.erase(factor);
+}
+
+void Clique::clearTabular() {
+	this->pots.clear();
 }

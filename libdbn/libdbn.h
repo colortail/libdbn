@@ -172,7 +172,11 @@ static PyObject* setEvid(PyObject* self, PyObject *args) {
 static PyObject* setQuery(PyObject* self, PyObject *args) {
 	
 	const char * query;
-	PyArg_ParseTuple(args, "s", &query);
+	if (!PyArg_ParseTuple(args, "s", &query)) {
+		PyErr_SetString(libdbnError, "参数异常");
+		return NULL;
+	}
+	
 
 	q.push_back(string(query));
 	

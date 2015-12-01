@@ -40,3 +40,10 @@ class WeightedMinFill : public Metric {
 	std::string getType() { return "WeightedMinFill"; }
 	int operator()(const BNet & bn, std::vector<bool>&);
 };
+
+
+//Likelihood Function
+class LL {
+public:
+
+};

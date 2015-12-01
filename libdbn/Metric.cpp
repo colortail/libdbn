@@ -2,6 +2,9 @@
 
 int MinFill::operator()(const BNet & bn, std::vector<bool> & marked) {
 	BNet& tbn = const_cast<BNet&>(bn);
+	if (bn.getStructType() != MORAL)
+		tbn.moralize();
+
 	std::vector<int> nbrs;
 	int cnt = 0;
 	int min[2] = { -1, INT_MAX };

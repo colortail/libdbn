@@ -21,7 +21,7 @@ class InferStrategy;
 class InfEngine{
 private:
 	/*------------singleton-----------------------*/
-	InfEngine(std::string & strategy) {	}
+	InfEngine(std::string & strategy) : consistence(true) {}
 
 	static InfEngine* m_pInstance;
 
@@ -39,11 +39,15 @@ private:
 	static EngineGC engineGC;
 
 	/*--------------------------------------*/
+
+	//if JTree have setted evidences(false is not, true mean that have setted)
+	bool consistence;
+
+	static unordered_map<string, double> evidCache;
+
 	int getMaxCardinalityElem(const BNet & moral, const vector<bool> & marked);
 
 	set<Factor>& setEvidence(set<Factor>& factorset, unordered_map<string, double> &);
-
-	void initJTreeCPD(JTree & jtree, const BNet & bnet);
 
 public:
 
@@ -58,10 +62,14 @@ public:
 		return m_pInstance;
 	}
 
+	void initJTreeCPD(JTree & jtree, const BNet & bnet);
+
 	//query ： 推理
 	Factor inference(BNet &, vector<string> &, unordered_map<string, double> &, InferStrategy & strategy);
 
-	//贪婪消去，特例是最小缺边搜索
+	bool getJTreeStatus() { return this->consistence; }
+
+	//贪婪消去，特例是最小缺边搜索(moral需被端正化)
 	vector<int> greedyOrdering(const BNet& moral, Metric & foo);
 
 	//最大势搜索
@@ -78,14 +86,17 @@ public:
 
 	//构建联合树（贝叶斯网引论 5.6 团树的构造）
 	JTree buildJTree(BNet & bnet);
-	JTree& buildJTree(JTree & jtree, BNet & moral, vector<int> & pi);
-	JTree& buildJTree(JTree &, BNet &, vector<int> &, set<int> &, int);
+	JTree& buildJTree(JTree&, BNet & moral, vector<int> & pi);
+	JTree& buildJTree(JTree&, BNet &, vector<int> &, set<int> &, int);
 
 	/*================================*/
-	void triangulate(BNet &, vector<int>& pi);
+	/*
+	这个三角化过程会改变图的结构
+	*/
+	BNet triangulate(const BNet &, vector<int>& pi);
 
 	//set<int> BronKerboschRecursive(set<int> r, set<int> p, set<int> x);
-	void BronKerboschRecursive(map<int, set<int>*> & nnbrs,
+	void BronKerboschRecursive(map<int, set<int>> & nnbrs,
 		set<int> & cand,
 		set<int> & done,
 		vector<int> & sofar,
@@ -93,19 +104,27 @@ public:
 
 	vector<Clique>* findCliques(BNet &);
 	vector<Clique>* findCliquesRecursive(BNet &);
-	//端正图构造联合树（from BNT Matlab ver.）
-	//make_max_clique_graph
-	JTree graphToJTree(BNet &);
+
+	/** 
+	端正图构造联合树
+	make_max_clique_graph
+	输入是个三角化图
+	*/
+	void graphToJTree(JTree & jtree, BNet & triGraph);
 	/*================================*/
 
 	//Shafer Shenoy Algorithm
-	Factor messagePropagation(BNet & bnet,
+	void messagePropagation(BNet & bnet,
 		JTree & jtree,
 		vector<string> & queryset,
-		unordered_map<string, double>& evidset,
-		vector<int> & pi);
+		unordered_map<string, double>& evidset);
 
-	void setEvidence(JTree & jtree, unordered_map<string, double> & evidset);
+	void setEvidence(JTree & jtree, const BNet & bn, unordered_map<string, double> & evidset);
+
+	Factor getTabularFromJTree(BNet & bnet,
+		JTree & jtree,
+		vector<string> & queryset,
+		unordered_map<string, double>& evidset);
 
 	//Hugin Algorithm
 	Factor messagePassing(BNet & bnet, vector<string> & queryset, unordered_map<string, double>& evidset);

@@ -32,12 +32,16 @@ public:
 	bool isContain(vector<string>&);
 	void insert(const RandVar & var);
 	void insert(const Factor & factor);
+	void removeTabular(const Factor & factor);
+	void clearTabular();
 
 	set<string> containElements(const vector<string>&);
 
 	set<Factor>& getPots();
 
 	Factor getCliqueInitPotential();
+
+	static set<RandVar> joinElement(const Clique &, const Clique &);
 
 	friend class JTree;
 	friend class InOutUtils;

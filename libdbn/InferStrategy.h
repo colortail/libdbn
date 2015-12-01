@@ -1,8 +1,8 @@
 #pragma once
 #include "BNet.h"
 #include "InfEngine.h"
-
 #include "InOutUtils.h"
+#include "utils.h"
 
 //ÍÆÀí²ßÂÔ
 class InferStrategy {

@@ -58,8 +58,8 @@ public:
 		this->factorType = type;
 	}
 
-	void setParents(const vector<string> & parents);
-	void setProb(const vector<double> &);
+	Factor& setParents(const vector<string> & parents);
+	Factor& setProb(const vector<double> &);
 
 	Factor& normalize();
 
@@ -85,7 +85,7 @@ public:
 	//…Ë÷√÷§æ›
 	Factor setEvidence(unordered_map<string, double>&) const;
 
-	friend bool operator<(Factor lhs, Factor rhs);
+	friend bool operator<(const Factor & lhs, const Factor & rhs);
 
 	friend class InfEngine;
 

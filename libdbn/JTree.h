@@ -4,6 +4,7 @@
 #include "GraphMatrix.h"
 #include "BNet.h"
 #include "InOutUtils.h"
+#include "utils.h"
 
 class Clique;
 
@@ -22,6 +23,8 @@ private:
 public:
 	JTree();
 	~JTree();
+	JTree(const JTree &);
+	JTree& operator=(const JTree & copy);
 
 	int getRoot(vector<string> & queryset);
 	size_t getVertexSize() { return n; }
@@ -29,17 +32,21 @@ public:
 
 	int indexOf(string & name);
 
-	virtual int insert(Clique const &vertex);
-	virtual void insert(Factor const &edge, int w, int i, int j);
+	int insertClique(Clique const &vertex);
+	void insert(Factor const &edge, int w, int i, int j);
 
 	//寻找包含varset中所有编号(变量下标)的团
 	vector<int> findClique(set<int> & varset);
 	//找到覆盖变量集的团集(不要改成引用)
 	vector<int> findCoverClique(vector<string>);
+	//transform set, so reference again
+	vector<pair<int, int> > findCoverSeparator(vector<string> &);
 	
 	void setProb(const Factor & factor);
 
 	Factor getCliquePotential(int c);
+
+	void clearTabular();
 
 	//message propagation algorithm
 

@@ -4,10 +4,33 @@ bool operator<(const RandVar & var1, const RandVar & var2) {
 	return var1.node < var2.node;
 }
 
-BNet::BNet() :type(BNET), pJtree(NULL) {}
+BNet::BNet() :type(BNET), pJTree(NULL) {}
 
 BNet::~BNet() {
-	if (pJtree != NULL) delete pJtree;
+	if (pJTree != NULL) {
+		delete pJTree;
+		pJTree = NULL;
+	}
+}
+
+BNet::BNet(const BNet& bn) {
+	this->type = bn.type;
+	this->cpts = bn.cpts;
+
+	this->e = bn.e;
+	this->n = bn.n;
+
+	this->V = bn.V;
+	this->E = bn.E;
+	if (bn.pJTree != NULL)
+		this->pJTree = new JTree(*(bn.pJTree));
+	else
+		this->pJTree = NULL;
+
+	for (int i = 0; i < n; i++)
+		for (int j = firstNbr(i); -1 < j; j = nextNbr(i, j)) {
+			this->E[i][j] = new Edge <double>((bn.E[i][j])->data, (bn.E[i][j])->weight);
+		}
 }
 
 BNet& BNet::operator=(const BNet& bn) {
@@ -19,6 +42,12 @@ BNet& BNet::operator=(const BNet& bn) {
 
 	this->V = bn.V;
 	this->E = bn.E;
+
+	if (bn.pJTree != NULL)
+		this->pJTree = new JTree(*(bn.pJTree));
+	else
+		this->pJTree = NULL;
+
 	for (int i = 0; i < n; i++)
 		for (int j = firstNbr(i); -1 < j; j = nextNbr(i, j)) {
 			this->E[i][j] = new Edge <double>((bn.E[i][j])->data, (bn.E[i][j])->weight);
@@ -129,4 +158,53 @@ std::set<Factor> BNet::getCPTs() const {
 void BNet::correctNode() {
 	for (int i = 0; i < this->n; i++)
 		this->vertex(i).node = i;
+}
+
+void BNet::setnNbrs(std::map<int, std::set<int> > & map) {
+	for (int i = 0; i < n; i++) {
+		set<int> nbrs;
+		for (int j = firstNbr(i); 0 <= j; j = nextNbr(i, j)) {
+			nbrs.insert(j);
+		}
+		map.insert({ i, nbrs });
+	}
+	
+}
+
+void BNet::setJTree(JTree * _pJTree) {
+	
+	if (this->pJTree != NULL)
+		delete this->pJTree;
+	this->pJTree = _pJTree;
+
+}
+
+JTree * BNet::getJTree() {
+	return this->pJTree;
+}
+
+int BNet::getVarRange(int i) const {
+	return V[i].data.range;
+}
+
+int BNet::getPaVarsRange(int i) const {
+	int paRange = 1;
+	for (int pa = 0; pa < n; pa++) {
+		//replace exists() since const property
+		if ((0 <= i) && (i < n) && (0 <= pa) && (pa < n) && E[pa][i] != NULL) {
+			paRange *= V[pa].data.range;
+		}
+	}
+	return paRange;
+}
+
+vector<int> BNet::getPaVars(int i) const {
+	vector<int> paVars;
+	for (int pa = 0; pa < n; pa++) {
+		//replace exists() since const property
+		if ((0 <= i) && (i < n) && (0 <= pa) && (pa < n) && E[pa][i] != NULL) {
+			paVars.push_back(pa);
+		}
+	}
+	return paVars;
 }

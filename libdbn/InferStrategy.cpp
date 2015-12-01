@@ -20,16 +20,39 @@ Factor JTreeInference::operator()(BNet & bnet,
 	InfEngine* infEngine) {
 	
 	bnet.moralize();
-	
-	vector<int> pi = infEngine->maxCardinalitySearch(bnet);
-	//vector<int> pi = infEngine->greedyOrdering(bnet, MinFill());
-	
-	JTree jtree;
+	JTree * pJTree = bnet.getJTree();
 
-	jtree = infEngine->buildJTree(jtree, bnet, pi);
-	InOutUtils::stdPrintJTree(jtree);
-	return infEngine->messagePropagation(bnet, jtree, queryset, evidset, pi);
-	
+	if (pJTree == NULL) {
+
+		pJTree = new JTree();
+		/*方法1*/
+		/*
+		vector<int> pi_ = infEngine->maxCardinalitySearch(bnet);
+
+		infEngine->buildJTree(*pJTree, bnet, pi_);
+		*/
+
+		/*方法2*/
+		///*
+		vector<int> pi = infEngine->greedyOrdering(bnet, MinFill());
+		BNet triGraph = infEngine->triangulate(bnet, pi);
+		
+		infEngine->graphToJTree(*pJTree, triGraph);
+		//*/
+
+		bnet.setJTree(pJTree);
+		
+	}
+
+	infEngine->setEvidence(*pJTree, bnet, evidset);
+
+	if (infEngine->getJTreeStatus()) {
+		infEngine->messagePropagation(bnet, *pJTree, queryset, evidset);
+
+		BenchMark::debugStdOut(string("messagePropagation"));
+	}
+
+	return infEngine->getTabularFromJTree(bnet, *pJTree, queryset, evidset);
 	//unfinished hugin protocal
 	//return infEngine->messagePassing()
 }

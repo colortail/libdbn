@@ -6,6 +6,7 @@
 #include <vector>
 #include <set>
 #include <cstdint>
+#include <map>
 
 enum RandVarType { UNOBSERVED, OBSERVED, HIDDEN};
 enum StructType {BNET, MORAL};
@@ -37,6 +38,7 @@ class BNet : public GraphMatrix<RandVar, double>
 public:
 	BNet();
 	~BNet();
+	BNet(const BNet&);
 	BNet& operator=(const BNet& bn);
 
 	StructType getStructType() const { return type; }
@@ -67,11 +69,25 @@ public:
 	//更新所有节点，单个变量的边缘概率
 	void updateAllVarProb(JTree * pJtree);
 
+	//顶点i的所有邻居
+	void setnNbrs(std::map<int, std::set<int> > &);
+
+	void setJTree(JTree * pJTree);
+
+	JTree * getJTree();
+
+	int getVarRange(int i) const;
+
+	int getPaVarsRange(int i) const;
+	
+	std::vector<int> getPaVars(int i) const;
+
 	friend class InOutUtils;
 	//friend class InfEngine;
 
 private:
 	StructType type;
 	std::set<Factor> cpts;
-	JTree * pJtree;
+
+	JTree * pJTree;
 };
