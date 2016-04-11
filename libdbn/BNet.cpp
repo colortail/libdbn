@@ -208,3 +208,11 @@ vector<int> BNet::getPaVars(int i) const {
 	}
 	return paVars;
 }
+
+void BNet::insertCPT(const Factor & factor) {
+	this->cpts.insert(factor);
+}
+
+void BNet::removeCPT(const Factor & factor) {
+	this->cpts.erase(factor);
+}

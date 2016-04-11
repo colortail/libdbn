@@ -1,24 +1,21 @@
 #include "libdbn.h"
 
-//DLLEXPORT int foo(int a, int b) {
-//	printf("Your input %d and %d\n", a, b);
-//	return a + b;
-//}
-//
-//DLLEXPORT char * yell() {
-//	char *s = "yelling here";
-//	return s;
-//}
-
 // function list for registion
 static PyMethodDef libdbnMethods[] = {
-	{ "foo", wrap_my_c_func, METH_VARARGS },
-	{ "insertstr", insertStr, METH_VARARGS },
-	{ "show", showString, METH_VARARGS },
-	{ "setEvid", setEvid, METH_VARARGS },
-	{ "setQuery", setQuery, METH_VARARGS },
-	{ "jtreeQuery", varElim, METH_VARARGS },
-	{ "varElim", varElim, METH_VARARGS },
+	{ "resetBNet", resetBNet, METH_VARARGS, "重置贝叶斯网络" },
+	{ "clearEvid", clearEvid, METH_VARARGS, "清除查询证据" },
+	{ "clearQuery", clearQuery, METH_VARARGS, "清除查询变量" },
+	{ "insertVar", insertVar, METH_VARARGS, "插入变量" },
+	{ "insertEdge", insertEdge, METH_VARARGS, "插入边" },
+	{ "insertTabular", insertTabular, METH_VARARGS, "设置表格型因子" },
+	{ "removeTabular", removeTabular, METH_VARARGS, "删除表格型因子" },
+	{ "showEvid", showEvid, METH_VARARGS, "显示所有证据变量值" },
+	{ "showQuery", showQuery, METH_VARARGS, "显示所有查询变量" },
+	{ "setEvid", setEvid, METH_VARARGS, "设置证据值（name，value）" },
+	{ "setQuery", setQuery, METH_VARARGS, "设置查询变量(name)" },
+	{ "jtreeQuery", varElim, METH_VARARGS, "联合树精确推理" },
+	{ "varElim", varElim, METH_VARARGS, "变量消元法精确推理" }, 
+	{ "help", help, METH_VARARGS },
 	{NULL, NULL}
 };
 

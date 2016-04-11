@@ -51,6 +51,10 @@ public:
 
 	void setCPTs(const std::set<Factor>&);
 
+	void insertCPT(const Factor &);
+
+	void removeCPT(const Factor &);
+
 	std::set<int> getAllNbrs(const std::set<int>& restNode, int u);
 
 	std::vector<std::string> getAllNodesName();

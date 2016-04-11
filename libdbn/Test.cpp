@@ -16,7 +16,7 @@
 #include <set>
 #include <string>
 //#include <stdint.h>
-#include <pthread.h>
+//#include <pthread.h>
 //#include <math.h>
 //#include "libdbn.h"
 
@@ -97,6 +97,7 @@ void simple_init() {
 	sfs.insert(fe);
 
 	simpleBn.setCPTs(sfs);
+	
 }
 
 void asian_init(){
