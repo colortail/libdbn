@@ -57,12 +57,28 @@ class BNUtils(object):
 			i = 0
 			for i, val in enumerate(self.data):
 				self.graph.add_node(val['name'])
-			for val in self.data:
+				libdbn.insertVar(val['name'])
+				
+				#conditional probability table
+				try:
+					nodename = val['name']
+					for nodeval in val['cpt']:
+						print nodename,nodeval
+						libdbn.insertTabular(nodename, nodeval)
+					
+				except ValueError, e:
+					print 'check cpts plz!\n'
+
 				if val['pa'] == None:
 					continue
 				for paval in val['pa']:
 					self.graph.add_edge(paval, val['name'])
-		#conditional probability table
+					#conditional probability table
+
+					libdbn.insertEdge(paval, val['name'])
+
+			libdbn.setProbs()
+
 
 	def drawGraph(self):
 		nx.draw(self.graph, node_size = 200,with_labels = True)
@@ -79,10 +95,32 @@ class BNUtils(object):
 			for row in datareader:
 				print row
 
+	def reset(self):
+		libdbn.resetBNet()
+
+	def clearEvid(self):
+		libdbn.clearEvid()
+
+	def clearQuery(self):
+		libdbn.clearQuery()
+
+	def setEvid(self, evid, val):
+		libdbn.setEvid(evid, val)
+
+	def setQuery(self, query):
+		libdbn.setQuery(query)
+
+	def jtreeQuery(self):
+		libdbn.jtreeQuery()
+
+	def varElim(self):
+		libdbn.varElim()
+
 if __name__ == '__main__':
 	bn = BNUtils()
 	bn.loadjson('asian_net.json')
 	#bnUtils.drawGraph()
 
+utils = BNUtils()
 
 
