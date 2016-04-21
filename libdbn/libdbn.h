@@ -33,6 +33,7 @@ static PyObject * libdbnError;
 static BNet bn;
 static set<string> q;
 static unordered_map<string, double> e;
+static unordered_map<string, vector<double> > probset;
 static InfEngine* pInf = InfEngine::getInstance();
 
 static PyObject* resetBNet(PyObject* self, PyObject* args) {
@@ -103,7 +104,7 @@ static PyObject* setQuery(PyObject* self, PyObject *args) {
 	}
 
 	string qstr(query);
-	if (q.find(qstr) != q.end()) {
+	if (q.find(qstr) == q.end()) {
 		q.insert(qstr);
 	}
 	else {
@@ -159,29 +160,58 @@ static PyObject* insertVar(PyObject* self, PyObject* args) {
 
 static PyObject* insertEdge(PyObject* self, PyObject* args) {
 
-	int start;
-	int end;
-	if (!PyArg_ParseTuple(args, "ii", &start, &end)) {
+	const char * start;
+	const char * end;
+	if (!PyArg_ParseTuple(args, "ss", &start, &end)) {
 		PyErr_SetString(libdbnError, "参数异常");
 		return NULL;
 	}
-	bn.insert(0, 0, start, end);
+	int startIdx = bn.getNodeIndex(string(start));
+	int endIdx = bn.getNodeIndex(string(end));
+	if (startIdx != -1 && endIdx != -1)
+		bn.insert(0, 0, startIdx, endIdx);
+	Py_INCREF(Py_None);
+	return Py_None;
+}
+
+static PyObject* setProbs(PyObject* self, PyObject* args) {
+
+	for (int i = 0; i < bn.vertexSize(); i++) {
+		vector<string> names;
+		names.push_back(bn.vertex(i).name);
+		for (int j = 0; j < bn.vertexSize(); j++) {
+			if (bn.exists(j, i))
+				names.push_back(bn.vertex(j).name);
+		}
+		Factor fact(names);
+
+		unordered_map<string, vector<double> >::iterator it = probset.find(bn.vertex(i).name);
+		if (it != probset.end())
+		fact.setProb(it->second);
+		bn.insertCPT(fact);
+	}
+	probset.clear();
 	Py_INCREF(Py_None);
 	return Py_None;
 }
 
 static PyObject* insertTabular(PyObject* self, PyObject* args) {
 
-	if (!PyArg_ParseTuple(args, "ii")) {
+	const char * eleName;
+	double prob;
+	if (!PyArg_ParseTuple(args, "sd", &eleName, &prob)) {
 		PyErr_SetString(libdbnError, "参数异常");
 		return NULL;
 	}
-	vector<std::string> name;
-	vector<bool> pa;
 
-
-	Factor fact(name);
-	bn.insertCPT(fact);
+	unordered_map<string, vector<double> >::iterator it = probset.find(string(eleName));
+	if (it == probset.end()) {
+		vector<double> probvect;
+		probvect.push_back(prob);
+		probset.insert({string(eleName), probvect});
+	}
+	else 
+		it->second.push_back(prob);
 	Py_INCREF(Py_None);
 	return Py_None;
 }
@@ -203,6 +233,7 @@ static PyObject* removeTabular(PyObject* self, PyObject* args) {
 //wrap c function to Python function
 static PyObject* help(PyObject* self, PyObject * args) {
 	
+	printf("==========说明文档===========\n");
 	printf("==========说明文档===========\n");
 
 	return Py_None;

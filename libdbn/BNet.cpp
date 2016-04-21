@@ -216,3 +216,10 @@ void BNet::insertCPT(const Factor & factor) {
 void BNet::removeCPT(const Factor & factor) {
 	this->cpts.erase(factor);
 }
+
+int BNet::getNodeIndex(std::string & name) {
+	for (int i = 0; i < this->n; i++)
+		if (name == this->V[i].data.name)
+			return i;
+	return -1;
+}

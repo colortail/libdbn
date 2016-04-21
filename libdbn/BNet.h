@@ -59,6 +59,8 @@ public:
 
 	std::vector<std::string> getAllNodesName();
 
+	int getNodeIndex(std::string & name);
+
 	//ÃÌº”»±±ﬂ
 	void addFillEdge(int i, std::set<int> & restNode);
 
