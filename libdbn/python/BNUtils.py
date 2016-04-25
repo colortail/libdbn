@@ -117,9 +117,10 @@ class BNUtils(object):
 		libdbn.varElim()
 
 if __name__ == '__main__':
-	bn = BNUtils()
-	bn.loadjson('asian_net.json')
+	#bn = BNUtils()
+	#bn.loadjson('asian_net.json')
 	#bnUtils.drawGraph()
+    print 'run BNUtil'
 
 utils = BNUtils()
 

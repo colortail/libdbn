@@ -111,3 +111,7 @@ void InOutUtils::stdPrintJTree(JTree & jtree, int mode) {
 		}
 	}
 }
+
+void InOutUtils::readTrainSet(Hypothesis & hypothesis) { 
+
+}

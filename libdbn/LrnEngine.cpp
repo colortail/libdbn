@@ -4,42 +4,46 @@ LrnEngine::~LrnEngine()
 {
 }
 
-Hypothesis* LrnEngine::initParameter(const BNet & bnet) {
-	Hypothesis * hy = new Hypothesis();
-
-	for (int i = 0; i < bnet.vertexSize(); i++) {	
-		hy->insertParameter(bnet.getPaVarsRange(i), bnet.getVarRange(i));
+void LrnEngine::releaseStrategy(LearningStrategy * strategy) {
+	if (strategy != NULL) {
+		delete strategy;
 	}
-	return hy;
+	strategy = NULL;
 }
 
-void LrnEngine::setProbability(BNet & bnet, Hypothesis * hy) {
-	std::set<Factor> cpts;
-	for (int i = 0; i < bnet.vertexSize(); i++) {
-		vector<int> paIndex = bnet.getPaVars(i);
-		vector< vector <double> > & theta = hy->getCPT(i);
-		vector<RandVar> vars;
-		vector<string> paName;
-		vector<double> probs;
-		
-		for (int nodeIdx = 0; nodeIdx < paIndex.size(); nodeIdx++) {
-			
-			vars.push_back(bnet.vertex(paIndex[i]));
-			paName.push_back(bnet.vertex(paIndex[i]).name);
-		}
-		vars.push_back(bnet.vertex(i));
-
-		for (int k = 0; k < theta.size(); k++) {
-			for (int w = 0; w < theta[k].size(); w++) {
-				probs.push_back(theta[k][w]);
-			}
-		}
-		cpts.insert(Factor(vars).setParents(paName).setProb(probs));
-	}
-	bnet.setCPTs(cpts);
-	delete hy;
+LearningStrategy* LrnEngine::inputStrategy(string & param) {
+	//pass
+	return new EMStrategy();
 }
 
-Hypothesis * LrnEngine::sampling(Hypothesis * hy, const LearningData & data) {
-	return NULL;
+void LrnEngine::paramLearning(BNet & bnet, string & trainsetFileName, string & param) {
+	
+	//初始化假设集
+	Hypothesis * hypo = Hypothesis::init(bnet);
+	//读取观测数据文件（训练集）
+	hypo->readBNetData(trainsetFileName);
+	//设置初始模型参数
+	LearningStrategy * pStrategy = inputStrategy(param);
+	//学习过程
+	pStrategy->doLearing(this, hypo, pStrategy);
+	//数据向贝叶斯网络回填
+	hypo->setValue(bnet);;
+	
+	//回收操作
+	hypo->releaseHypothesis();
+	releaseStrategy(pStrategy);
+}
+
+void LrnEngine::mle(Hypothesis * hy, const LearningStrategy * strategy) {
+
+}
+
+void LrnEngine::em(Hypothesis * hy, const LearningStrategy * strategy) {
+	EMStrategy * emStrategy = (EMStrategy *)strategy;
+
+	//test
+	int i = 1, j = 1, k = 1;
+	emStrategy->getParameter(hy, i, j, k);
+	//do 
+
 }

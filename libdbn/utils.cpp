@@ -86,7 +86,7 @@ double uniformDist(int start, int end) {
 double gaussianDist(double mu, double sigma) {
 	
 	const double epsilon = std::numeric_limits<double>::min();
-	const double two_pi = 2.0*3.14159265358979323846;
+	const double two_pi = 2.0 * 3.14159265358979323846;
 
 	static double z0, z1;
 	static bool generate;
@@ -106,5 +106,77 @@ double gaussianDist(double mu, double sigma) {
 	z1 = sqrt(-2.0 * log(u1)) * sin(two_pi * u2);
 	return z0 * sigma + mu;
 }
+
+//string tool copy from net
+std::string trim(const std::string& str)
+{
+	std::string::size_type pos = str.find_first_not_of(' ');
+	if (pos == std::string::npos)
+	{
+		return str;
+	}
+	std::string::size_type pos2 = str.find_last_not_of(' ');
+	if (pos2 != std::string::npos)
+	{
+		return str.substr(pos, pos2 - pos + 1);
+	}
+	return str.substr(pos);
+}
+
+int split(const std::string& str, std::vector<std::string>& ret_, std::string sep)
+{
+	if (str.empty())
+	{
+		return 0;
+	}
+
+	std::string tmp;
+	std::string::size_type pos_begin = str.find_first_not_of(sep);
+	std::string::size_type comma_pos = 0;
+
+	while (pos_begin != std::string::npos)
+	{
+		comma_pos = str.find(sep, pos_begin);
+		if (comma_pos != std::string::npos)
+		{
+			tmp = str.substr(pos_begin, comma_pos - pos_begin);
+			pos_begin = comma_pos + sep.length();
+		}
+		else
+		{
+			tmp = str.substr(pos_begin);
+			pos_begin = comma_pos;
+		}
+
+		if (!tmp.empty())
+		{
+			ret_.push_back(tmp);
+			tmp.clear();
+		}
+	}
+	return 0;
+}
+
+std::string replace(const std::string& str, const std::string& src, const std::string& dest)
+{
+	std::string ret;
+
+	std::string::size_type pos_begin = 0;
+	std::string::size_type pos = str.find(src);
+	while (pos != std::string::npos)
+	{
+		
+		ret.append(str.data() + pos_begin, pos - pos_begin);
+		ret += dest;
+		pos_begin = pos + 1;
+		pos = str.find(src, pos_begin);
+	}
+	if (pos_begin < str.length())
+	{
+		ret.append(str.begin() + pos_begin, str.end());
+	}
+	return ret;
+}
+
 
 }

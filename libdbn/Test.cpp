@@ -10,13 +10,14 @@
 #include "InferStrategy.h"
 #include "InOutUtils.h"
 #include "JTree.h"
+#include "Hypothesis.h"
 
 #include <iostream>
 #include <vector>
 #include <set>
 #include <string>
 //#include <stdint.h>
-#include <pthread.h>
+//#include <pthread.h>
 //#include <math.h>
 //#include "libdbn.h"
 
@@ -275,6 +276,33 @@ void inferenceTest(vector<string> &q, unordered_map<string, double> & e) {
 
 }
 
+void FileInputTest() {
+	ifstream ifs;
+	ifs.open("../libdbn/python/trainset.txt", ifstream::in);
+
+	size_t readSize = 0;
+	char buff[1024];
+	printf("start\n");
+	while (ifs.getline(buff, sizeof(buff))) {
+		printf("%s", buff);
+		string s(buff);
+		vector<string> splited;
+		vector<double> rowData;
+		split(s, splited);
+		for (int i = 0; i < 10; i++) {
+			if (i < splited.size()) {
+				rowData.push_back(atof(splited[i].c_str()));
+				printf("%f ", rowData[i]);
+			}
+			else {
+				rowData.push_back(-1);
+				printf("%f ", rowData[i]);
+			}
+		}
+	}
+	ifs.close();
+}
+
 int main() {
 	BenchMark::startDebug();
 	BenchMark bm;
@@ -282,10 +310,10 @@ int main() {
 	//factorTest();
 	
 	//bnetTest();
-	setEvidence(string("C"), 1);
-	inferenceTest(vector<string>(1, string("A")), evidset);
+	//setEvidence(string("C"), 1);
+	//inferenceTest(vector<string>(1, string("A")), evidset);
 	
-	
+	//FileInputTest();
 	bm.timeTest();
 	return 0;
 }

@@ -82,8 +82,10 @@ public:
 
 	JTree * getJTree();
 
+	//获取变量的取值范围（可以取值的个数）
 	int getVarRange(int i) const;
 
+	//获取该变量父节点取值范围（可以取值的组合数）
 	int getPaVarsRange(int i) const;
 	
 	std::vector<int> getPaVars(int i) const;

@@ -23,7 +23,15 @@ double gaussianDist(double mu = 0, double sigma = 1);
 
 /**特定的概率分布**/
 
+//string tools
+std::string trim(const std::string& str);
 
+int split(const std::string& str, std::vector<std::string>& ret_, std::string sep = ",");
+
+std::string replace(const std::string& str, const std::string& src, const std::string& dest);
+
+
+//benchmark
 class BenchMark {
 private:
 	std::string benchMark;

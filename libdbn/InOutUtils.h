@@ -3,6 +3,7 @@
 #include "BNet.h"
 #include "Clique.h"
 #include "JTree.h"
+#include "Hypothesis.h"
 
 struct UndirectEdge;
 
@@ -10,6 +11,7 @@ class Clique;
 class JTree;
 class BNet;
 class Factor;
+class Hypothesis;
 
 class InOutUtils {
 public:
@@ -25,6 +27,9 @@ public:
 
 	//显示Junction Tree
 	static void stdPrintJTree(JTree & jtree, int mode = 0);
+
+	//将训练集读入，初始化参数假设
+	static void readTrainSet(Hypothesis & hypothesis);
 };
 
 static const char* RANDVARTYPE[] = {

@@ -4,7 +4,7 @@ bool operator<(const RandVar & var1, const RandVar & var2) {
 	return var1.node < var2.node;
 }
 
-BNet::BNet() :type(BNET), pJTree(NULL) {}
+BNet::BNet() :type(StructType::BNET), pJTree(NULL) {}
 
 BNet::~BNet() {
 	if (pJTree != NULL) {
