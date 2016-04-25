@@ -16,5 +16,6 @@ class EMStrategy : public LearningStrategy {
 public:
 	void doLearing(LrnEngine * engine, Hypothesis * hy, const LearningStrategy * strategy);
 	double getParameter(Hypothesis * hy, int i, int j, int k);
+	double getData(Hypothesis * hy, int i, int j);
 };
 

@@ -44,6 +44,7 @@ void LrnEngine::em(Hypothesis * hy, const LearningStrategy * strategy) {
 	//test
 	int i = 1, j = 1, k = 1;
 	emStrategy->getParameter(hy, i, j, k);
+	emStrategy->getData(hy, i, j);
 	//do 
 
 }

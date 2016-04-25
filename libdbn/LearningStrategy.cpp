@@ -17,3 +17,7 @@ void EMStrategy::doLearing(LrnEngine * engine, Hypothesis * hy, const LearningSt
 double EMStrategy::getParameter(Hypothesis * hy, int i, int j, int k) {
 	return 0;
 }
+
+double EMStrategy::getData(Hypothesis * hy, int i, int j) {
+	return 0;
+}
