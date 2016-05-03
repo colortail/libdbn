@@ -11,6 +11,7 @@
 #include "InOutUtils.h"
 #include "JTree.h"
 #include "Hypothesis.h"
+#include "LrnEngine.h"
 
 #include <iostream>
 #include <vector>
@@ -284,7 +285,7 @@ void FileInputTest() {
 	char buff[1024];
 	printf("start\n");
 	while (ifs.getline(buff, sizeof(buff))) {
-		printf("%s", buff);
+		printf("%s\n", buff);
 		string s(buff);
 		vector<string> splited;
 		vector<double> rowData;
@@ -292,15 +293,28 @@ void FileInputTest() {
 		for (int i = 0; i < 10; i++) {
 			if (i < splited.size()) {
 				rowData.push_back(atof(splited[i].c_str()));
-				printf("%f ", rowData[i]);
+				printf("%f\t", rowData[i]);
 			}
 			else {
 				rowData.push_back(-1);
-				printf("%f ", rowData[i]);
+				printf("%f\t", rowData[i]);
 			}
 		}
 	}
 	ifs.close();
+}
+
+void lrnTest() {
+	simple_init();
+	LrnEngine * pLrn = LrnEngine::getInstance();
+	pLrn->paramLearning(simpleBn, string("../libdbn/python/trainset.txt"), string(""));
+	set<Factor> fset = simpleBn.getCPTs();
+	for (set<Factor>::iterator iter = fset.begin();
+		iter != fset.end();
+		iter++) {
+
+		InOutUtils::stdPrint(*iter);
+	}
 }
 
 int main() {
@@ -314,6 +328,7 @@ int main() {
 	//inferenceTest(vector<string>(1, string("A")), evidset);
 	
 	//FileInputTest();
+	lrnTest();
 	bm.timeTest();
 	return 0;
 }

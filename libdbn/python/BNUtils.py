@@ -90,10 +90,14 @@ class BNUtils(object):
 		plt.savefig(filename);
 
 	def loadTrainSet(self, filename = 'trainset.csv', delimeter = ','):
-		with open(filename, 'r') as trainset:
-			datareader = csv.reader(trainset, delimeter, dialect='excel')
-			for row in datareader:
-				print row
+		#with open(filename, 'r') as trainset:
+		#	datareader = csv.reader(trainset, delimeter, dialect='excel')
+		#	for row in datareader:
+		#		print row
+		
+	#一个简单实现，待修正	
+	def emParam(self, filename = 'trainset.txt'):
+		libdbn.paramLearning(filename)	
 
 	def reset(self):
 		libdbn.resetBNet()

@@ -19,6 +19,8 @@ setup(name = MOD,
 		'../JTree.cpp',
 		'../Metric.cpp',
 		'../utils.cpp',
-		'../Test.cpp'
+		'../LrnEngine.cpp',
+		'../LearningStrategy.cpp',
+		'../Hypothesis.cpp'
 		])])
 

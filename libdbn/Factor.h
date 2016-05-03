@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cstdint>
 
+#include "Hypothesis.h"
 #include "BNet.h"
 #include "utils.h"
 
@@ -88,6 +89,7 @@ public:
 	friend bool operator<(const Factor & lhs, const Factor & rhs);
 
 	friend class InfEngine;
+	friend class Hypothesis;
 
 private:
 	//ÔªËØÃû³Æ

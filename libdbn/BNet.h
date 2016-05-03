@@ -49,6 +49,8 @@ public:
 
 	std::set<Factor> getCPTs() const;
 
+	std::vector<Factor> * getCPTList();
+
 	void setCPTs(const std::set<Factor>&);
 
 	void insertCPT(const Factor &);

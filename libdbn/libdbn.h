@@ -10,6 +10,7 @@
 #include "GraphMatrix.h"
 #include "InfEngine.h"
 #include "InferStrategy.h"
+#include "LrnEngine.h"
 #include "InOutUtils.h"
 #include "JTree.h"
 #include "Metric.h"
@@ -35,6 +36,7 @@ static set<string> q;
 static unordered_map<string, double> e;
 static unordered_map<string, vector<double> > probset;
 static InfEngine* pInf = InfEngine::getInstance();
+static LrnEngine* pLrn = LrnEngine::getInstance();
 
 static PyObject* resetBNet(PyObject* self, PyObject* args) {
 	for (int i = bn.vertexSize() - 1; 0 <= i; i--) {
@@ -228,13 +230,43 @@ static PyObject* removeTabular(PyObject* self, PyObject* args) {
 	return Py_None;
 }
 
+//每行数据最多1024个字符
+static PyObject* readTrainDataToBN(PyObject* self, PyObject* args) {
+
+	if (!PyArg_ParseTuple(args, "s")) {
+		PyErr_SetString(libdbnError, "参数异常");
+		return NULL;
+	}
+	
+	
+	Py_INCREF(Py_None);
+	return Py_None;
+}
+
+static PyObject* paramLearning(PyObject* self, PyObject* args) {
+
+	const char * cfilename;
+	if (!PyArg_ParseTuple(args, "s", &cfilename)) {
+		PyErr_SetString(libdbnError, "参数异常");
+		return NULL;
+	}
+	string filename(cfilename);
+	pLrn->paramLearning(bn, filename, string(""));
+	//output
+	for (int i = 0; i < bn.vertexSize(); i++) {
+		InOutUtils::stdPrint((const Factor&)bn.vertex(i));
+	}
+	Py_INCREF(Py_None);
+	return Py_None;
+}
+
 // c/c++ native function
 
 //wrap c function to Python function
 static PyObject* help(PyObject* self, PyObject * args) {
 	
 	printf("==========说明文档===========\n");
-	printf("==========说明文档===========\n");
+	printf("函数readTrainDataToBN按行读取数据文件，每行数据最多1024个字符\n");
 
 	return Py_None;
 }

@@ -16,6 +16,8 @@ static PyMethodDef libdbnMethods[] = {
 	{ "setQuery", setQuery, METH_VARARGS, "设置查询变量(name)" },
 	{ "jtreeQuery", varElim, METH_VARARGS, "联合树精确推理" },
 	{ "varElim", varElim, METH_VARARGS, "变量消元法精确推理" }, 
+	{ "paramLearning", paramLearning, METH_VARARGS, "参数学习" },
+	{ "readTrainDataToBN", readTrainDataToBN, METH_VARARGS, "读取训练集数据" },
 	{ "help", help, METH_VARARGS },
 	{NULL, NULL}
 };

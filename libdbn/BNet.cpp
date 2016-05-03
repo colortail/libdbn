@@ -223,3 +223,21 @@ int BNet::getNodeIndex(std::string & name) {
 			return i;
 	return -1;
 }
+
+//need be release
+std::vector<Factor>* BNet::getCPTList() {
+	vector<Factor> * pCptList = new vector<Factor>;
+	for (int i = 0; i < this->n; i++) {
+		vector<RandVar> vars;
+		RandVar self(i, vertex(i).name, vertex(i).range);
+		vars.push_back(self);
+		vector<int> parVars = this->getPaVars(i);
+		for (int j = 0; j < parVars.size(); j++) {
+			RandVar var(parVars[j], vertex(parVars[j]).name, vertex(parVars[j]).range);
+			vars.push_back(var);
+		}
+		Factor f(vars);
+		pCptList->push_back(f);
+	}
+	return pCptList;
+}

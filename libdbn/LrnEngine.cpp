@@ -1,5 +1,7 @@
 #include "LrnEngine.h"
 
+LrnEngine* LrnEngine::m_pInstance = new LrnEngine();
+
 LrnEngine::~LrnEngine()
 {
 }
@@ -27,7 +29,7 @@ void LrnEngine::paramLearning(BNet & bnet, string & trainsetFileName, string & p
 	//学习过程
 	pStrategy->doLearing(this, hypo, pStrategy);
 	//数据向贝叶斯网络回填
-	hypo->setValue(bnet);;
+	hypo->setValue(bnet);
 	
 	//回收操作
 	hypo->releaseHypothesis();
