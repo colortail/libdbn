@@ -4,6 +4,7 @@
 #include "Hypothesis.h"
 #include "LearningStrategy.h"
 #include "LearningData.h"
+#include "InfEngine.h"
 
 class Hypothesis;
 class LearningStrategy;

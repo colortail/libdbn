@@ -4,9 +4,13 @@
 
 #include "utils.h"
 #include "BNet.h"
+#include "LearningStrategy.h"
+#include "InfEngine.h"
 
 class BNet;
 class Factor;
+class LearningStrategy;
+
 using namespace std;
 
 enum MODEL_TYPE { SBNET, DBNET };
@@ -32,6 +36,8 @@ private:
 	vector<vector<double> > data;
 	//缺失值位置
 	vector<vector<int> > lacks;
+	//缺失权重
+	vector<double> weight;
 	
 public:
 	static Hypothesis* init(BNet& bnet);
@@ -42,7 +48,11 @@ public:
 
 	void readBNetData(string & filename);
 
-	void doMLE();
+	void doMLE(const LearningStrategy & strategy);
+
+	void repairDataSet();
+
+	void doEM(const LearningStrategy & strategy);
 
 };
 

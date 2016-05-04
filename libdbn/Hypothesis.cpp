@@ -85,7 +85,7 @@ void Hypothesis::readBNetData(string & filename) {
 	ifs.close();
 }
 
-void Hypothesis::doMLE() {
+void Hypothesis::doMLE(const LearningStrategy & strategy) {
 	for (int i = 0; i < param->size(); i++) {
 		vector<vector<double>> * table = param->at(i).pTable;
 		vector<string> names = (*param->at(i).getElementsName());
@@ -120,4 +120,53 @@ void Hypothesis::doMLE() {
 		}
 		param->at(i).normalize();
 	}
+}
+
+//注，此处EM是因为若在Engine势必频繁构造和析构Factor Set
+//造成效率低下，这是最初设计时没有考虑到的（design error）
+void Hypothesis::doEM(const LearningStrategy & strategy) {
+	//1 初始化theta (根据参数可选：optional)
+	for (int i = 0; i < lacks.size(); i++) {
+		for (int j = 0; j < lacks[i].size(); j++) {
+			data[i][lacks[i][j]] = 0;//固定方式初始化：随机？
+		}
+	}
+	
+	InfEngine * infEngine = InfEngine::getInstance();
+	//2 终止条件（根据参数可选：optional）
+	int period = 10;
+	while (true && period--) {
+		//E step
+		doMLE(strategy);
+		//M step
+		for (int k = 0; k < lacks.size(); k++) {
+			if (lacks[k].size() == 0)
+				continue;
+
+			vector<string> q;
+			unordered_map<string, double> evid;
+			BNet * pBnet = (BNet*)model;
+			for (int w = 0, j = 0; w < this->sampleNum && j < lacks[k].size(); w++) {
+				if (w == lacks[k][j]) {
+					q.push_back(pBnet->vertex(lacks[k][j++]).name);
+				}
+				else {
+					evid.insert({pBnet->vertex(w).name, data[k][w]});
+				}
+			}
+			//应该也是可选方法
+			Factor result = infEngine->inference(*pBnet, q, evid, JTreeInference());
+			//最大概率的观测值 回填到data
+			if (lacks[k].size() != q.size()) {
+				throw exception("EM 回填data时，状态非法");
+			}
+			for (int j = 0; j < lacks[k].size(); j++) {
+				data[k][lacks[k][j]] = result.getMaxProValue(q[j]);
+			}
+		}
+	}
+}
+
+void Hypothesis::repairDataSet() {
+	//暂未实现
 }

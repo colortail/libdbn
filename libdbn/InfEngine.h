@@ -16,6 +16,7 @@
 #include <map>
 
 class InferStrategy;
+class Metric;
 
 //推理算法接口
 class InfEngine{

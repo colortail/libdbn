@@ -71,6 +71,9 @@ public:
 	//commonvars 是结果，自动清空
 	vector<string>& exists(vector<string>& commonvars, const vector<string>& varset) const;
 
+	//name变量最可能的取值，用于learning
+	double getMaxProValue(string & name);
+
 	//utils
 	uint32_t indexOf(string & name) const;
 	size_t getElemSize(string & name);

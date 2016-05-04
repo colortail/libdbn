@@ -472,3 +472,15 @@ vector<double> Factor::getProbVector() const {
 	}
 	return prob;
 }
+
+double Factor::getMaxProValue(string & name) {
+	uint32_t index = indexOf(name);
+	double maxValue = -1;
+	if (index != -1 && pTable != NULL) {
+		for (int i = 0; i < pTable->size(); i++) {
+			if (maxValue < pTable->at(i)[varSize])
+				maxValue = pTable->at(i)[varSize];
+		}
+	}
+	return maxValue;
+}

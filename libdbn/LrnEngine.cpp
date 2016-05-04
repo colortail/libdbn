@@ -43,10 +43,5 @@ void LrnEngine::mle(Hypothesis * hy, const LearningStrategy * strategy) {
 void LrnEngine::em(Hypothesis * hy, const LearningStrategy * strategy) {
 	EMStrategy * emStrategy = (EMStrategy *)strategy;
 
-	//test
-	int i = 1, j = 1, k = 1;
-	emStrategy->getParameter(hy, i, j, k);
-	emStrategy->getData(hy, i, j);
-	//do 
-
+	hy->doEM(*strategy);
 }

@@ -6,7 +6,13 @@
 #include "InOutUtils.h"
 #include "utils.h"
 
+#include <vector>
+#include <unordered_map>
+
 class Clique;
+class Factor;
+
+using namespace std;
 
 class JTree : public GraphMatrix<Clique, Factor>
 {

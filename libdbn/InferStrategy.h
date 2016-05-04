@@ -4,6 +4,7 @@
 #include "InOutUtils.h"
 #include "utils.h"
 
+class InfEngine;
 //ÍÆÀí²ßÂÔ
 class InferStrategy {
 public:
